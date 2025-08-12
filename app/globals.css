@@ -10,7 +10,25 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-primary: #FF3F33;
+  --color-secondary: #9FC87E;
+  --color-tertiary: #FFE6E1;
+  --color-quaternary: #075B5E;
 }
+
+.text-primary { color: var(--color-primary); }
+.bg-primary { background-color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.text-tertiary { color: var(--color-tertiary); }
+.bg-tertiary { background-color: var(--color-tertiary); }
+.text-quaternary { color: var(--color-quaternary); }
+.bg-quaternary { background-color: var(--color-quaternary); }
+.border-primary { border-color: var(--color-primary); }
+.focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); }
+.focus\:border-primary:focus { border-color: var(--color-primary); }
+.hover\:bg-primary\/90:hover { background-color: color-mix(in srgb, var(--color-primary) 90%, transparent); }
+.hover\:text-primary\/80:hover { color: color-mix(in srgb, var(--color-primary) 80%, transparent); }
 
 @media (prefers-color-scheme: dark) {
   :root {
