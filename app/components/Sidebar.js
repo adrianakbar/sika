@@ -1,9 +1,22 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [activeMenu, setActiveMenu] = useState("");
+  const pathname = usePathname();
+
+  // Function to check if menu item is active
+  const isMenuActive = (item) => {
+    if (pathname === item.href) return true;
+
+    // Special cases for different route patterns
+    if (item.id === "prinsip-dasar" && pathname === "/basicprinciple")
+      return true;
+
+    return false;
+  };
 
   const menuItems = [
     {
@@ -18,19 +31,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         >
           <path
             d="M12 12C12 11.4477 12.4477 11 13 11H19C19.5523 11 20 11.4477 20 12V19C20 19.5523 19.5523 20 19 20H13C12.4477 20 12 19.5523 12 19V12Z"
-            stroke="#000000"
             strokeWidth="2"
             strokeLinecap="round"
           ></path>
           <path
             d="M4 5C4 4.44772 4.44772 4 5 4H8C8.55228 4 9 4.44772 9 5V19C9 19.5523 8.55228 20 8 20H5C4.44772 20 4 19.5523 4 19V5Z"
-            stroke="#000000"
             strokeWidth="2"
             strokeLinecap="round"
           ></path>
           <path
             d="M12 5C12 4.44772 12.4477 4 13 4H19C19.5523 4 20 4.44772 20 5V7C20 7.55228 19.5523 8 19 8H13C12.4477 8 12 7.55228 12 7V5Z"
-            stroke="#000000"
             strokeWidth="2"
             strokeLinecap="round"
           ></path>
@@ -156,7 +166,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           />
         </svg>
       ),
-      href: "/tujuan",
+      href: "/goal",
     },
     {
       id: "prinsip-dasar",
@@ -176,7 +186,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           />
         </svg>
       ),
-      href: "/prinsip-dasar",
+      href: "/basicprinciple",
     },
   ];
 
@@ -247,14 +257,17 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                   className={`
                     flex items-center px-4 py-3 rounded-lg transition-colors duration-200
                     ${
-                      activeMenu === item.id
+                      isMenuActive(item)
                         ? "bg-primary text-white"
                         : "text-gray-700 hover:bg-gray-100"
                     }
                   `}
                   onClick={() => {
                     setActiveMenu(item.id);
-                    toggleSidebar();
+                    if (window.innerWidth < 1024) {
+                      // Only close on mobile
+                      toggleSidebar();
+                    }
                   }}
                 >
                   <span className="mr-3">{item.icon}</span>
