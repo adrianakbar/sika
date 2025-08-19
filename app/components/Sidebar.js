@@ -69,8 +69,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       href: "/permit-planning",
     },
     {
-      id: "structure-organization",
-      title: "Structure Organization",
+      id: "site-plot-plans",
+      title: "Site Plot Plans",
       icon: (
         <svg
           className="w-5 h-5"
@@ -78,35 +78,30 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path
+          <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-          />
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            {" "}
+            <path
+              d="M4 10.1433C4 5.64588 7.58172 2 12 2C16.4183 2 20 5.64588 20 10.1433C20 14.6055 17.4467 19.8124 13.4629 21.6744C12.5343 22.1085 11.4657 22.1085 10.5371 21.6744C6.55332 19.8124 4 14.6055 4 10.1433Z"
+              stroke="#000000"
+              strokeWidth="1.5"
+            ></path>{" "}
+            <circle
+              cx="12"
+              cy="10"
+              r="3"
+              stroke="#000000"
+              strokeWidth="1.5"
+            ></circle>{" "}
+          </g>
         </svg>
       ),
-      href: "/structure-organization",
-    },
-    {
-      id: "formulir-permit",
-      title: "Formulir Permit",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      ),
-      href: "/formulir-permit",
+      href: "/siteplotplans",
     },
     {
       id: "regulation",
@@ -146,7 +141,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           />
         </svg>
       ),
-      href: "/12-elemen-sika",
+      href: "/element",
     },
     {
       id: "tujuan",
@@ -222,7 +217,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               />
               <div>
                 <h1 className="text-xl font-bold text-quaternary">SIKA</h1>
-                <p className="text-xs text-gray-600">Sistem Izin Kerja Aman</p>
+                <p className="text-xs text-gray-600">Sistem Izin Kerja Selamat</p>
               </div>
             </div>
             {/* Close button untuk mobile */}

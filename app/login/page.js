@@ -10,10 +10,11 @@ import PasswordInput from "../components/PasswordInput";
 export default function Login() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: "",
+    email: "", // Changed from username to email
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -25,15 +26,35 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulasi proses login
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Gunakan API yang proper untuk authentication
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    console.log("Login attempt:", formData);
-    setIsLoading(false);
+      const result = await response.json();
 
-    // Redirect ke dashboard setelah login berhasil
-    router.push('/dashboard');
+      if (result.success) {
+        // Simpan user data ke localStorage
+        localStorage.setItem('user', JSON.stringify(result.user));
+        
+        // Redirect ke dashboard
+        router.push('/dashboard');
+      } else {
+        setError(result.message || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,7 +63,7 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60 z-10" />
         <Image
-          src="/images/pertamina-office.jpg"
+          src="/images/pertamina-office.jpeg"
           alt="Pertamina Office"
           fill
           className="object-cover"
@@ -76,7 +97,7 @@ export default function Login() {
               />
               <h1 className="text-2xl font-bold text-quaternary">SIKA</h1>
             </div>
-            <p className="text-gray-600 text-sm">Sistem Izin Kerja Aman</p>
+            <p className="text-gray-600 text-sm">Sistem Izin Kerja Selamat</p>
           </div>
 
           {/* Header untuk desktop */}
@@ -107,13 +128,21 @@ export default function Login() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Username Field */}
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
+            {/* Email Field */}
             <Input
-              label="Username"
-              name="username"
-              value={formData.username}
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
               onChange={handleChange}
-              placeholder="Masukkan username Anda"
+              placeholder="Masukkan email Anda"
               required
             />
 

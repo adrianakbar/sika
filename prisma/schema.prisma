@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  role      Role     @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  lastLogin DateTime? @map("last_login")
+
+  // Relations
+  goals                   Goal[]
+  siteplotplans          SitePlotPlan[]
+  organizationStructures OrganizationStructure[]
+
+  @@map("users")
+}
+
+// Goal model
+model Goal {
+  id          Int        @id @default(autoincrement())
+  title       String     @db.VarChar(255)
+  description String?    @db.Text
+  status      GoalStatus @default(PENDING)
+  userId      Int        @map("user_id")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("goals")
+}
+
+// Site Plot Plan model
+model SitePlotPlan {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  filePath    String?  @map("file_path") @db.VarChar(500)
+  userId      Int      @map("user_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("site_plot_plans")
+}
+
+// Organization Structure model
+model OrganizationStructure {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  position   String?  @db.VarChar(255)
+  department String?  @db.VarChar(255)
+  parentId   Int?     @map("parent_id")
+  userId     Int      @map("user_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   OrganizationStructure?  @relation("OrganizationHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children OrganizationStructure[] @relation("OrganizationHierarchy")
+
+  @@map("organization_structure")
+}
+
+// Enums
+enum Role {
+  ADMIN
+  USER
+
+  @@map("role")
+}
+
+enum GoalStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+
+  @@map("goal_status")
+}

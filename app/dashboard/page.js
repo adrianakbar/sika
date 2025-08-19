@@ -1,14 +1,62 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Check authentication pada saat komponen dimount
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+          // Jika tidak ada user data, redirect ke login
+          router.push('/login');
+          return;
+        }
+        
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('user');
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // If no user, don't render dashboard (will redirect in useEffect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -40,12 +88,20 @@ const Dashboard = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">U</span>
+                  <span className="text-white text-sm font-semibold">
+                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
                 </div>
-                <span className="ml-2 text-gray-700 font-medium hidden sm:block">User</span>
+                <span className="ml-2 text-gray-700 font-medium hidden sm:block">
+                  {user?.name || 'User'}
+                </span>
               </div>
               
-              <button className="p-2 text-gray-500 hover:text-gray-700">
+              <button 
+                onClick={handleLogout}
+                className="p-2 text-gray-500 hover:text-gray-700"
+                title="Logout"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
