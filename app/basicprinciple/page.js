@@ -7,8 +7,6 @@ import Link from "next/link";
 export default function BasicPrinciplePage() {
   const [selectedPrinciple, setSelectedPrinciple] = useState(null);
 
-
-
   const principles = [
     {
       id: 1,
@@ -76,13 +74,9 @@ export default function BasicPrinciplePage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      
-
+    <div className="flex bg-gray-50">
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
-        
-
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto">
           <div className="min-h-full bg-gradient-to-br from-slate-50 to-blue-50">
@@ -213,7 +207,7 @@ export default function BasicPrinciplePage() {
 
       {/* Modal for Principle Details */}
       {selectedPrinciple && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
