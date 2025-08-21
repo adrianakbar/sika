@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import withAuth from "../components/withAuth";
 
-export default function ElementPage() {
+function ElementPage() {
   const [selectedElement, setSelectedElement] = useState(null);
 
   const elements = [
@@ -312,3 +313,5 @@ export default function ElementPage() {
     );
   }
 }
+
+export default withAuth(ElementPage);

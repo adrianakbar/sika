@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import withAuth from "../components/withAuth";
 
-export default function GoalPage() {
+function GoalPage() {
 
   const goals = [
     {
@@ -298,3 +299,5 @@ export default function GoalPage() {
     </div>
   );
 }
+
+export default withAuth(GoalPage);

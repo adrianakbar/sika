@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import withAuth from "../components/withAuth";
 
-export default function SitePlotPlans() {
+function SitePlotPlans() {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
@@ -681,3 +682,5 @@ export default function SitePlotPlans() {
     </div>
   );
 }
+
+export default withAuth(SitePlotPlans);

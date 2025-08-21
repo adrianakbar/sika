@@ -112,8 +112,8 @@ export default function Login() {
               />
               <h1 className="text-2xl font-bold text-quaternary">SIKA</h1>
             </div>
-            <p className="text-gray-600 text-lg mb-2">Sistem Izin Kerja Aman</p>
-            <p className="text-gray-500 text-sm">PT Pertamina (Persero)</p>
+            <p className="text-gray-600 text-lg mb-2">Sistem Izin Kerja Selamat</p>
+            <p className="text-gray-500 text-sm">PT Pertamina Hulu Energi West Madura Offshore</p>
           </div>
 
           {/* Header Welcome */}

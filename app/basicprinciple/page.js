@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import withAuth from "../components/withAuth";
 
-export default function BasicPrinciplePage() {
+function BasicPrinciplePage() {
   const [selectedPrinciple, setSelectedPrinciple] = useState(null);
 
   const principles = [
@@ -327,3 +328,5 @@ export default function BasicPrinciplePage() {
     </div>
   );
 }
+
+export default withAuth(BasicPrinciplePage);

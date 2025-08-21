@@ -5,8 +5,9 @@ import SitePlotVisualization from '../components/SitePlotVisualization';
 import Button from '../components/Button';
 import NotificationToast from '../components/NotificationToast';
 import ConfirmModal from '../components/ConfirmModal';
+import withAuth from '../components/withAuth';
 
-export default function PermitPlanning() {
+function PermitPlanning() {
   const [permits, setPermits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -512,3 +513,5 @@ export default function PermitPlanning() {
     </div>
   );
 }
+
+export default withAuth(PermitPlanning);

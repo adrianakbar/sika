@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import withAuth from "../components/withAuth";
 
-const Dashboard = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+function Dashboard({ user }) {
   const [dashboardData, setDashboardData] = useState({
     activePermits: 0,
     completedPermits: 0,
@@ -14,32 +12,6 @@ const Dashboard = () => {
     recentActivities: [],
   });
   const [dataLoading, setDataLoading] = useState(true);
-  const router = useRouter();
-
-  // Check authentication pada saat komponen dimount
-  useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const userData = localStorage.getItem("user");
-        if (!userData) {
-          // Jika tidak ada user data, redirect ke login
-          router.push("/login");
-          return;
-        }
-
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Error parsing user data:", error);
-        localStorage.removeItem("user");
-        router.push("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -65,20 +37,6 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, [user]);
-
-  // Show loading spinner while checking authentication
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  // If no user, don't render dashboard (will redirect in useEffect)
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="p-6">
@@ -370,6 +328,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
+}
 
-export default Dashboard;
+export default withAuth(Dashboard);
