@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Sidebar from '../components/Sidebar';
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -35,15 +33,6 @@ const Dashboard = () => {
     checkAuth();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    router.push('/login');
-  };
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   // Show loading spinner while checking authentication
   if (loading) {
     return (
@@ -59,67 +48,15 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center">
-              {/* Mobile menu button */}
-              <button
-                onClick={toggleSidebar}
-                className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              <h1 className="ml-4 lg:ml-0 text-2xl font-bold text-gray-800">
-                Dashboard SIKA
-              </h1>
-            </div>
-
-            {/* User menu */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">
-                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-                <span className="ml-2 text-gray-700 font-medium hidden sm:block">
-                  {user?.name || 'User'}
-                </span>
-              </div>
-              
-              <button 
-                onClick={handleLogout}
-                className="p-2 text-gray-500 hover:text-gray-700"
-                title="Logout"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <div className="bg-gradient-to-r from-primary to-primary/80 text-white rounded-2xl p-8">
-              <h2 className="text-3xl font-bold mb-2">Selamat Datang di SIKA</h2>
-              <p className="text-xl opacity-90">Sistem Izin Kerja Aman PT Pertamina (Persero)</p>
-              <p className="mt-4 opacity-75">
-                Kelola izin kerja Anda dengan aman dan efisien melalui sistem terintegrasi
-              </p>
+    <div className="p-6">
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-primary to-primary/80 text-white rounded-2xl p-8">
+          <h2 className="text-3xl font-bold mb-2">Selamat Datang di SIKA</h2>
+          <p className="text-xl opacity-90">Sistem Izin Kerja Aman PT Pertamina (Persero)</p>
+          <p className="mt-4 opacity-75">
+            Kelola izin kerja Anda dengan aman dan efisien melalui sistem terintegrasi
+          </p>
             </div>
           </div>
 
@@ -257,8 +194,6 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </main>
-      </div>
     </div>
   );
 };

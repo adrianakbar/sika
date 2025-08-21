@@ -26,8 +26,8 @@ model User {
 
   // Relations
   goals                   Goal[]
-  siteplotplans          SitePlotPlan[]
   organizationStructures OrganizationStructure[]
+  permitPlannings        PermitPlanning[]
 
   @@map("users")
 }
@@ -48,20 +48,45 @@ model Goal {
   @@map("goals")
 }
 
-// Site Plot Plan model
-model SitePlotPlan {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  description String?  @db.Text
-  filePath    String?  @map("file_path") @db.VarChar(500)
-  userId      Int      @map("user_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+// Permit Planning model
+model PermitPlanning {
+  id               Int      @id @default(autoincrement())
+  permitNumber     String?  @map("permit_number") @db.VarChar(100)
+  workDescription  String   @map("work_description") @db.Text
+  workLocation     String   @map("work_location") @db.VarChar(255)
+  
+  // Location details based on site plan
+  locationCode     String?  @map("location_code") @db.VarChar(10) // PRC, UTL, BLD, etc.
+  areaName         String?  @map("area_name") @db.VarChar(100)
+  coordinates      String?  @db.Text // JSON string for x,y coordinates
+  zone             LocationZone?
+  
+  // Permit details
+  workType         WorkType?
+  riskLevel        RiskLevel @default(LOW)
+  startDate        DateTime @map("start_date")
+  endDate          DateTime @map("end_date")
+  contractor       String?  @db.VarChar(255)
+  supervisor       String?  @db.VarChar(255)
+  
+  // Safety requirements
+  ppeRequired      String?  @map("ppe_required") @db.Text
+  safetyMeasures   String?  @map("safety_measures") @db.Text
+  emergencyContact String?  @map("emergency_contact") @db.VarChar(255)
+  
+  // Status
+  status           PermitStatus @default(DRAFT)
+  approvedBy       String?  @map("approved_by") @db.VarChar(255)
+  approvedAt       DateTime? @map("approved_at")
+  
+  userId           Int      @map("user_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("site_plot_plans")
+  @@map("permit_planning")
 }
 
 // Organization Structure model
@@ -97,4 +122,52 @@ enum GoalStatus {
   COMPLETED
 
   @@map("goal_status")
+}
+
+enum LocationZone {
+  PRC  // Processing/Production Area
+  UTL  // Utilities Area
+  BLD  // Building/Office Area
+  GMS  // Gas Metering Station
+  CCR  // Central Control Room
+  OY   // Open Yard
+  NBL  // New Building/Laboratory
+  WS   // Workshop/Warehouse
+  
+  @@map("location_zone")
+}
+
+enum WorkType {
+  HOT_WORK        // Pekerjaan Panas
+  COLD_WORK       // Pekerjaan Dingin
+  CONFINED_SPACE  // Ruang Terbatas
+  HEIGHT_WORK     // Pekerjaan Ketinggian
+  EXCAVATION      // Penggalian
+  ELECTRICAL      // Kelistrikan
+  MAINTENANCE     // Pemeliharaan
+  CONSTRUCTION    // Konstruksi
+  
+  @@map("work_type")
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  
+  @@map("risk_level")
+}
+
+enum PermitStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  
+  @@map("permit_status")
 }

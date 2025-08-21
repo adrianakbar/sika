@@ -3,14 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Sidebar from "../components/Sidebar";
 
 export default function GoalPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
 
   const goals = [
     {
@@ -74,79 +68,12 @@ export default function GoalPage() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center">
-              {/* Mobile menu button */}
-              <button
-                onClick={toggleSidebar}
-                className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-
-              <h1 className="ml-4 lg:ml-0 text-2xl font-bold text-quaternary">
-                Tujuan SIKA
-              </h1>
-            </div>
-
-            {/* User menu */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">U</span>
-                </div>
-                <span className="ml-2 text-gray-700 font-medium hidden sm:block">
-                  User
-                </span>
-              </div>
-
-              <button className="p-2 text-gray-500 hover:text-gray-700">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="min-h-full bg-gradient-to-br from-slate-50 to-blue-50">
-            {/* Content Container */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              {/* Hero Section */}
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-primary font-semibold text-sm mb-4">
+    <div className="min-h-full bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center px-4 py-2 bg-primary/10 rounded-full text-primary font-semibold text-sm mb-4">
                   <svg
                     className="w-4 h-4 mr-2"
                     fill="none"
@@ -368,9 +295,6 @@ export default function GoalPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
     </div>
   );
 }
