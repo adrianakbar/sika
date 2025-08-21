@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import PermitPlanningForm from '../components/PermitPlanningForm';
 import SitePlotVisualization from '../components/SitePlotVisualization';
-
 import Button from '../components/Button';
+import NotificationToast from '../components/NotificationToast';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function PermitPlanning() {
   const [permits, setPermits] = useState([]);
@@ -13,10 +14,25 @@ export default function PermitPlanning() {
   const [selectedPermit, setSelectedPermit] = useState(null);
   const [filterZone, setFilterZone] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  
+  // New states for modals and notifications
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [permitToDelete, setPermitToDelete] = useState(null);
+  const [showCreateConfirm, setShowCreateConfirm] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     fetchPermits();
   }, []);
+
+  const showNotification = (message, type = 'success') => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setNotification({ message, type });
+      setIsAnimating(false);
+    }, 100);
+  };
 
   const fetchPermits = async () => {
     try {
@@ -41,37 +57,57 @@ export default function PermitPlanning() {
     if (editingPermit) {
       setPermits(prev => prev.map(p => p.id === newPermit.id ? newPermit : p));
       setEditingPermit(null);
+      showNotification('Permit updated successfully!', 'success');
     } else {
       setPermits(prev => [newPermit, ...prev]);
+      showNotification('Permit created successfully!', 'success');
     }
     setShowForm(false);
+    setShowCreateConfirm(false);
     fetchPermits(); // Refresh data
   };
 
-  const handleEdit = (permit) => {
-    setEditingPermit(permit);
+  const handleCreatePermit = () => {
+    setShowCreateConfirm(true);
+  };
+
+  const confirmCreatePermit = () => {
+    setShowCreateConfirm(false);
     setShowForm(true);
   };
 
-  const handleDelete = async (permitId) => {
-    if (!confirm('Are you sure you want to delete this permit?')) return;
+  const handleDeleteClick = (permit) => {
+    setPermitToDelete(permit);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDelete = async () => {
+    if (!permitToDelete) return;
     
     try {
-      const response = await fetch(`/api/permit-planning/${permitId}`, {
+      const response = await fetch(`/api/permit-planning/${permitToDelete.id}`, {
         method: 'DELETE'
       });
       
       const result = await response.json();
       if (result.success) {
-        setPermits(prev => prev.filter(p => p.id !== permitId));
-        alert('Permit deleted successfully');
+        setPermits(prev => prev.filter(p => p.id !== permitToDelete.id));
+        showNotification('Permit deleted successfully!', 'success');
       } else {
-        alert('Failed to delete permit');
+        showNotification('Failed to delete permit', 'error');
       }
     } catch (error) {
       console.error('Error deleting permit:', error);
-      alert('Failed to delete permit');
+      showNotification('Failed to delete permit', 'error');
+    } finally {
+      setShowDeleteConfirm(false);
+      setPermitToDelete(null);
     }
+  };
+
+  const handleEdit = (permit) => {
+    setEditingPermit(permit);
+    setShowForm(true);
   };
 
   const handleVisualizationPointClick = (point) => {
@@ -125,7 +161,7 @@ export default function PermitPlanning() {
           <h1 className="text-3xl font-bold text-quaternary">Work Permit Planning</h1>
           <p className="text-foreground mt-1">Manage work permits and visualize locations on site plot</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={handleCreatePermit}>
             Create New Permit
           </Button>
         </div>
@@ -254,30 +290,47 @@ export default function PermitPlanning() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div>Start: {new Date(permit.startDate).toLocaleDateString()}</div>
                         <div>End: {new Date(permit.endDate).toLocaleDateString()}</div>
-                        <div>Valid: {new Date(permit.validUntil).toLocaleDateString()}</div>
+                       
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {getStatusBadge(permit.status)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button
-                          onClick={() => setSelectedPermit(permit)}
-                          className="text-primary hover:text-primary/80"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => handleEdit(permit)}
-                          className="text-secondary hover:text-secondary/80"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(permit.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          {/* View Button */}
+                          <button
+                            onClick={() => setSelectedPermit(permit)}
+                            className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200"
+                            title="View Details"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          
+                          {/* Edit Button */}
+                          <button
+                            onClick={() => handleEdit(permit)}
+                            className="p-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-lg transition-colors duration-200"
+                            title="Edit Permit"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          
+                          {/* Delete Button */}
+                          <button
+                            onClick={() => handleDeleteClick(permit)}
+                            className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors duration-200"
+                            title="Delete Permit"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -290,7 +343,7 @@ export default function PermitPlanning() {
 
       {/* Selected Permit Details Modal */}
       {selectedPermit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -416,6 +469,46 @@ export default function PermitPlanning() {
           </div>
         </div>
       )}
+
+      {/* Create Permit Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showCreateConfirm}
+        onClose={() => setShowCreateConfirm(false)}
+        onConfirm={confirmCreatePermit}
+        title="Create New Permit"
+        message="Are you sure you want to create a new work permit? This will open the permit form."
+        confirmText="Continue"
+        cancelText="Cancel"
+        type="info"
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm && !!permitToDelete}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setPermitToDelete(null);
+        }}
+        onConfirm={handleDelete}
+        title="Delete Permit"
+        message="Are you sure you want to delete this permit?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      >
+        {permitToDelete && (
+          <div className="bg-gray-50 p-3 rounded-lg transform transition-all duration-200 hover:bg-gray-100">
+            <p className="text-sm font-medium text-gray-900">{permitToDelete.permitNumber}</p>
+            <p className="text-sm text-gray-600">{permitToDelete.workDescription}</p>
+          </div>
+        )}
+      </ConfirmModal>
+
+      {/* Notification Toast */}
+      <NotificationToast
+        notification={notification}
+        onClose={() => setNotification(null)}
+      />
     </div>
   );
 }
