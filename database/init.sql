@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'user') DEFAULT 'user',
+    role ENUM('ADMIN', 'USER') DEFAULT 'USER',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login TIMESTAMP NULL
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS goals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    status ENUM('pending', 'in_progress', 'completed') DEFAULT 'pending',
+    status ENUM('PENDING', 'IN_PROGRESS', 'COMPLETED') DEFAULT 'PENDING',
     user_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -54,12 +54,12 @@ CREATE TABLE IF NOT EXISTS organization_structure (
 
 -- Insert data admin default
 INSERT INTO users (name, email, password, role) VALUES 
-('Administrator', 'admin@sika.com', 'admin123', 'admin'),
-('User Demo', 'user@sika.com', 'user123', 'user')
+('Administrator', 'admin@sika.com', 'admin123', 'ADMIN'),
+('User Demo', 'user@sika.com', 'user123', 'USER')
 ON DUPLICATE KEY UPDATE id=id;
 
 -- Insert sample data untuk testing
 INSERT INTO goals (title, description, status, user_id) VALUES 
-('Implementasi Sistem SIKA', 'Mengimplementasikan sistem informasi keselamatan dan kesehatan kerja', 'in_progress', 1),
-('Pelatihan K3', 'Mengadakan pelatihan keselamatan dan kesehatan kerja untuk seluruh karyawan', 'pending', 1)
+('Implementasi Sistem SIKA', 'Mengimplementasikan sistem informasi keselamatan dan kesehatan kerja', 'IN_PROGRESS', 1),
+('Pelatihan K3', 'Mengadakan pelatihan keselamatan dan kesehatan kerja untuk seluruh karyawan', 'PENDING', 1)
 ON DUPLICATE KEY UPDATE id=id;
