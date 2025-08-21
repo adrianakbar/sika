@@ -57,7 +57,7 @@ export default function ConfirmModal({
   const config = getTypeConfig();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+    <div className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-fadeIn">
       <div className="bg-white rounded-lg max-w-md w-full transform transition-all duration-300 ease-out animate-scaleIn">
         <div className="p-6">
           <div className="flex items-center mb-4">

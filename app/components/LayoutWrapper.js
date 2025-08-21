@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from './Sidebar';
+import ConfirmModal from './ConfirmModal';
 
 export default function LayoutWrapper({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -32,8 +34,17 @@ export default function LayoutWrapper({ children }) {
   }, [pathname]);
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     localStorage.removeItem('user');
+    setShowLogoutModal(false);
     router.push('/login');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   // Pages that don't need sidebar (login page)
@@ -101,6 +112,18 @@ export default function LayoutWrapper({ children }) {
           {children}
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        title="Konfirmasi Logout"
+        message="Apakah Anda yakin ingin logout?"
+        confirmText="Logout"
+        cancelText="Batal"
+        type="warning"
+        onConfirm={confirmLogout}
+        onClose={cancelLogout}
+      />
     </div>
   );
 }

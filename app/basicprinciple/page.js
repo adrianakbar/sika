@@ -207,7 +207,7 @@ export default function BasicPrinciplePage() {
 
       {/* Modal for Principle Details */}
       {selectedPrinciple && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 backdrop-blur-lg flex items-center justify-center p-4 z-50 animate-scaleIn">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">

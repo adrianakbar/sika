@@ -94,11 +94,11 @@ export default function PermitPlanning() {
         setPermits(prev => prev.filter(p => p.id !== permitToDelete.id));
         showNotification('Permit deleted successfully!', 'success');
       } else {
-        showNotification('Failed to delete permit', 'error');
+        showNotification(result.message || 'Failed to delete permit', 'error');
       }
     } catch (error) {
       console.error('Error deleting permit:', error);
-      showNotification('Failed to delete permit', 'error');
+      showNotification('Network error. Failed to delete permit', 'error');
     } finally {
       setShowDeleteConfirm(false);
       setPermitToDelete(null);
@@ -343,7 +343,7 @@ export default function PermitPlanning() {
 
       {/* Selected Permit Details Modal */}
       {selectedPermit && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -437,7 +437,7 @@ export default function PermitPlanning() {
 
       {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
