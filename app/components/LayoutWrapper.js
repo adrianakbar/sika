@@ -66,7 +66,7 @@ export default function LayoutWrapper({ children }) {
               </button>
               
               <h1 className="ml-4 lg:ml-0 text-2xl font-bold text-gray-800">
-                SIKA - Sistem Izin Kerja Aman
+                SIKA - Sistem Izin Kerja Selamat
               </h1>
             </div>
 

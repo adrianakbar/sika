@@ -21,10 +21,6 @@ export default function PermitPlanningForm({ onSubmitSuccess, editData = null, o
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [coordinateMode, setCoordinateMode] = useState('manual'); // 'manual', 'map', or 'siteplot'
-  const [sitePlotPlans, setSitePlotPlans] = useState([]);
-  const [loadingSitePlots, setLoadingSitePlots] = useState(false);
-  const [selectedSitePlot, setSelectedSitePlot] = useState(null);
 
   // Zone definitions
   const zones = [
@@ -54,30 +50,7 @@ export default function PermitPlanningForm({ onSubmitSuccess, editData = null, o
         coordinates: editData.coordinates || ''
       });
     }
-    
-    // Load site plot plans for location selection
-    fetchSitePlotPlans();
   }, [editData]);
-
-  const fetchSitePlotPlans = async () => {
-    try {
-      setLoadingSitePlots(true);
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      const response = await fetch(`/api/siteplotplans?userId=${userData.id}`);
-      const result = await response.json();
-      
-      if (result.success) {
-        setSitePlotPlans(result.data);
-      } else {
-        console.error('Failed to fetch site plot plans:', result.message);
-      }
-    } catch (error) {
-      console.error('Error fetching site plot plans:', error);
-    } finally {
-      setLoadingSitePlots(false);
-    }
-  };
 
   // Auto-set endDate based on work type and risk level if not already set
   useEffect(() => {
@@ -252,20 +225,22 @@ export default function PermitPlanningForm({ onSubmitSuccess, editData = null, o
       ...prev,
       coordinates: `${coordinates.x},${coordinates.y}`
     }));
-  };
-
-  const handleSitePlotSelect = (sitePlot) => {
-    setSelectedSitePlot(sitePlot);
     
-    // Auto-fill form data from site plot
-    setFormData(prev => ({
-      ...prev,
-      zone: sitePlot.zone || prev.zone,
-      coordinates: sitePlot.coordinates || prev.coordinates
-    }));
-    
-    // Set coordinate mode to siteplot
-    setCoordinateMode('siteplot');
+    // Show brief success feedback
+    if (coordinates.type === 'coordinate') {
+      // Create temporary visual feedback
+      const successAlert = document.createElement('div');
+      successAlert.innerHTML = `<div class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+        ✓ Coordinates set: ${coordinates.x.toFixed(1)}, ${coordinates.y.toFixed(1)}
+      </div>`;
+      document.body.appendChild(successAlert);
+      
+      setTimeout(() => {
+        if (document.body.contains(successAlert)) {
+          document.body.removeChild(successAlert);
+        }
+      }, 2000);
+    }
   };
 
   return (
@@ -369,120 +344,34 @@ export default function PermitPlanningForm({ onSubmitSuccess, editData = null, o
               </label>
               
               <div className="space-y-3">
-                {/* Coordinate Input Methods */}
-                <div className="flex gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => setCoordinateMode('manual')}
-                    className={`px-3 py-1 text-xs rounded-md ${
-                      coordinateMode === 'manual' 
-                        ? 'bg-primary text-white' 
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    Manual
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCoordinateMode('siteplot')}
-                    className={`px-3 py-1 text-xs rounded-md ${
-                      coordinateMode === 'siteplot' 
-                        ? 'bg-primary text-white' 
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    From Site Plot
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCoordinateMode('map')}
-                    className={`px-3 py-1 text-xs rounded-md ${
-                      coordinateMode === 'map' 
-                        ? 'bg-primary text-white' 
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    Interactive Map
-                  </button>
+                <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 bg-primary rounded-full"></div>
+                    <span className="text-sm font-medium text-primary">Interactive Map Mode</span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    📍 Click anywhere on the site layout map below to set work location coordinates
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    💡 The coordinates will be automatically filled when you click on the map
+                  </p>
                 </div>
 
-                {/* Manual Input */}
-                {coordinateMode === 'manual' && (
-                  <Input
-                    name="coordinates"
-                    value={formData.coordinates}
-                    onChange={handleChange}
-                    placeholder="e.g., 45.5,67.2 or 45.5;67.2"
-                    error={errors.coordinates}
-                  />
-                )}
-
-                {/* Site Plot Selection */}
-                {coordinateMode === 'siteplot' && (
-                  <div>
-                    {loadingSitePlots ? (
-                      <p className="text-sm text-gray-500">Loading site plots...</p>
-                    ) : sitePlotPlans.length > 0 ? (
-                      <select
-                        onChange={(e) => {
-                          const sitePlot = sitePlotPlans.find(sp => sp.id === parseInt(e.target.value));
-                          if (sitePlot) handleSitePlotSelect(sitePlot);
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      >
-                        <option value="">Select from existing site plots</option>
-                        {sitePlotPlans.map(sitePlot => (
-                          <option key={sitePlot.id} value={sitePlot.id}>
-                            {sitePlot.name} {sitePlot.zone ? `(${sitePlot.zone})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <p className="text-sm text-gray-500">No site plots available. Create one first.</p>
-                    )}
-                    
-                    {selectedSitePlot && (
-                      <div className="mt-2 p-2 bg-gray-50 rounded-md text-sm">
-                        <strong>Selected:</strong> {selectedSitePlot.name}
-                        {selectedSitePlot.description && (
-                          <div className="text-gray-600">{selectedSitePlot.description}</div>
-                        )}
-                        {selectedSitePlot.coordinates && (
-                          <div className="text-gray-600">Coordinates: {selectedSitePlot.coordinates}</div>
-                        )}
-                      </div>
-                    )}
-
-                    <Input
-                      name="coordinates"
-                      value={formData.coordinates}
-                      onChange={handleChange}
-                      placeholder="Coordinates will be auto-filled"
-                      disabled
-                      className="mt-2"
-                    />
-                  </div>
-                )}
-
-                {/* Interactive Map */}
-                {coordinateMode === 'map' && (
-                  <div>
-                    <Input
-                      name="coordinates"
-                      value={formData.coordinates}
-                      onChange={handleChange}
-                      placeholder="Click on map below to set coordinates"
-                      error={errors.coordinates}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Click on the site visualization below to set coordinates automatically
-                    </p>
-                  </div>
-                )}
+                <Input
+                  name="coordinates"
+                  value={formData.coordinates}
+                  onChange={handleChange}
+                  placeholder="Click on map below to set coordinates"
+                  error={errors.coordinates}
+                />
+                
+                <p className="text-xs text-gray-500">
+                  Coordinates will be automatically filled when you click on the site layout map below
+                </p>
               </div>
               
               <p className="text-xs text-gray-500 mt-1">
-                Format: x,y or x;y (range 0-100)
+                Format: x,y (range 0-100)
               </p>
             </div>
           </div>
@@ -610,21 +499,28 @@ export default function PermitPlanningForm({ onSubmitSuccess, editData = null, o
         )}
 
         {/* Interactive Site Visualization */}
-        {coordinateMode === 'map' && (
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-quaternary mb-4">Site Location Map</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Click on the map below to set the work location coordinates automatically.
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold text-quaternary mb-4">
+            🗺️ Site Location Map - Click to Set Coordinates
+          </h3>
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
+            <p className="text-sm text-amber-800 font-medium mb-1">
+              📌 How to set coordinates:
             </p>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <SitePlotVisualization
-                onPointClick={handleMapClick}
-                selectedZone={formData.zone}
-                showOnlyPermits={false}
-              />
-            </div>
+            <p className="text-xs text-amber-700">
+              1. Click anywhere on the site layout image below<br/>
+              2. Your coordinates will be automatically filled above<br/>
+              3. You can click multiple times to adjust the location
+            </p>
           </div>
-        )}
+          <div className="bg-gray-50 p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-primary transition-colors">
+            <SitePlotVisualization
+              onPointClick={handleMapClick}
+              selectedZone={formData.zone}
+              showOnlyPermits={false}
+            />
+          </div>
+        </div>
 
         {/* Submit Buttons */}
         <div className="flex gap-4 pt-6">
