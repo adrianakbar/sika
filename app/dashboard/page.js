@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import withAuth from "../components/withAuth";
+import { useRouter } from "next/navigation";
 
 function Dashboard({ user }) {
   const [dashboardData, setDashboardData] = useState({
@@ -12,6 +13,7 @@ function Dashboard({ user }) {
     recentActivities: [],
   });
   const [dataLoading, setDataLoading] = useState(true);
+  const router = useRouter();
 
   // Fetch dashboard data
   useEffect(() => {
@@ -45,7 +47,7 @@ function Dashboard({ user }) {
         <div className="bg-gradient-to-r from-primary to-primary/80 text-foreground rounded-2xl p-8">
           <h2 className="text-3xl font-bold mb-2">Selamat Datang di SIKA</h2>
           <p className="text-xl opacity-90">
-            Sistem Izin Kerja Aman PT Pertamina (Persero)
+            Sistem Izin Kerja Selamat PT. Pertamina Hulu Energi WMO (Pertamina Subholding Upstream)
           </p>
           <p className="mt-4 opacity-75">
             Kelola izin kerja Anda dengan aman dan efisien melalui sistem

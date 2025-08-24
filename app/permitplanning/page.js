@@ -186,7 +186,7 @@ function PermitPlanning() {
               <option value="GMS">GMS - Gas Metering</option>
               <option value="CCR">CCR - Control Room</option>
               <option value="OY">OY - Open Yard</option>
-              <option value="NBL">NBL - Laboratory</option>
+              <option value="NBL">NBL - New Building</option>
               <option value="WS">WS - Workshop</option>
             </select>
           </div>
@@ -272,8 +272,25 @@ function PermitPlanning() {
                           <div className="text-sm font-medium text-gray-900">
                             {permit.permitNumber}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {permit.workType?.replace('_', ' ')} - {permit.workDescription}
+                          <div className="text-sm text-gray-500 flex items-center gap-2">
+                            {(() => {
+                              const workTypeInfo = {
+                                'COLD_WORK': { label: 'Cold Work', color: 'bg-blue-500' },
+                                'COLD_WORK_BREAKING': { label: 'Cold Work - breaking containment', color: 'bg-black' },
+                                'HOT_WORK_SPARK': { label: 'Hot work - spark potential', color: 'bg-yellow-500' },
+                                'HOT_WORK_FLAME': { label: 'Hot work - naked flame', color: 'bg-red-500' }
+                              };
+                              const info = workTypeInfo[permit.workType] || { label: permit.workType, color: 'bg-gray-500' };
+                              return (
+                                <>
+                                  <div className={`w-2 h-2 rounded-full ${info.color}`}></div>
+                                  <span>{info.label}</span>
+                                </>
+                              );
+                            })()}
+                          </div>
+                          <div className="text-sm text-gray-500 truncate max-w-xs">
+                            {permit.workDescription}
                           </div>
                           <div className="mt-1">
                             {getRiskLevelBadge(permit.riskLevel)}
@@ -364,7 +381,24 @@ function PermitPlanning() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <strong>Work Type:</strong> {selectedPermit.workType?.replace('_', ' ')}
+                    <strong>Work Permit Type:</strong> 
+                    <div className="mt-1 flex items-center gap-2">
+                      {(() => {
+                        const workTypeInfo = {
+                          'COLD_WORK': { label: 'Cold Work', color: 'bg-blue-500' },
+                          'COLD_WORK_BREAKING': { label: 'Cold Work - breaking containment', color: 'bg-black' },
+                          'HOT_WORK_SPARK': { label: 'Hot work - spark potential', color: 'bg-yellow-500' },
+                          'HOT_WORK_FLAME': { label: 'Hot work - naked flame', color: 'bg-red-500' }
+                        };
+                        const info = workTypeInfo[selectedPermit.workType] || { label: selectedPermit.workType, color: 'bg-gray-500' };
+                        return (
+                          <>
+                            <div className={`w-3 h-3 rounded-full ${info.color}`}></div>
+                            <span>{info.label}</span>
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
                   <div>
                     <strong>Risk Level:</strong> {getRiskLevelBadge(selectedPermit.riskLevel)}
@@ -382,13 +416,55 @@ function PermitPlanning() {
                   <p className="mt-1 text-gray-700">{selectedPermit.workDescription}</p>
                 </div>
                 
-                <div>
-                  <strong>Contractor:</strong> {selectedPermit.contractor}
+                {/* Personnel Information */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <strong>Personal Authority:</strong> {selectedPermit.personalAuthority || 'N/A'}
+                  </div>
+                  <div>
+                    <strong>Company:</strong> {selectedPermit.company || 'N/A'}
+                  </div>
+                  <div>
+                    <strong>Site Controller:</strong> {selectedPermit.siteControllerName || 'N/A'}
+                  </div>
+                  <div>
+                    <strong>Area Authority:</strong> {selectedPermit.areaAuthority || 'N/A'}
+                  </div>
                 </div>
                 
-                <div>
-                  <strong>Supervisor:</strong> {selectedPermit.supervisorName} ({selectedPermit.supervisorContact})
-                </div>
+                {/* Related Documents */}
+                {selectedPermit.relatedDocuments && (
+                  <div>
+                    <strong>Related Documents:</strong>
+                    <div className="mt-2 space-y-1">
+                      {(() => {
+                        try {
+                          const docs = typeof selectedPermit.relatedDocuments === 'string' 
+                            ? JSON.parse(selectedPermit.relatedDocuments) 
+                            : selectedPermit.relatedDocuments;
+                          return Object.entries(docs).map(([key, doc]) => {
+                            if (doc.checked) {
+                              const labels = {
+                                l2ra: 'L2RA',
+                                confineSpace: 'Confine Space Entry Certificate',
+                                tkiTko: 'TKI / TKO',
+                                other: 'Other'
+                              };
+                              return (
+                                <div key={key} className="text-sm">
+                                  • {labels[key]}: {doc.number}
+                                </div>
+                              );
+                            }
+                            return null;
+                          }).filter(Boolean);
+                        } catch (e) {
+                          return <div className="text-sm text-gray-500">Invalid document format</div>;
+                        }
+                      })()}
+                    </div>
+                  </div>
+                )}
                 
                 {selectedPermit.equipmentNeeded && (
                   <div>
@@ -404,7 +480,7 @@ function PermitPlanning() {
                   </div>
                 )}
                 
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <strong>Start Date:</strong><br/>
                     {new Date(selectedPermit.startDate).toLocaleDateString()}
@@ -412,10 +488,6 @@ function PermitPlanning() {
                   <div>
                     <strong>End Date:</strong><br/>
                     {new Date(selectedPermit.endDate).toLocaleDateString()}
-                  </div>
-                  <div>
-                    <strong>Valid Until:</strong><br/>
-                    {new Date(selectedPermit.validUntil).toLocaleDateString()}
                   </div>
                 </div>
               </div>
@@ -461,6 +533,7 @@ function PermitPlanning() {
               <PermitPlanningForm
                 editData={editingPermit}
                 onSubmitSuccess={handleFormSubmit}
+                showNotification={showNotification}
                 onCancel={() => {
                   setShowForm(false);
                   setEditingPermit(null);

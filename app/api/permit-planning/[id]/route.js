@@ -69,9 +69,12 @@ export async function PUT(request, { params }) {
         riskLevel: body.riskLevel,
         startDate: new Date(body.startDate),
         endDate: new Date(body.endDate),
-        contractor: body.contractor,
-        supervisor: body.supervisorName || body.supervisor, // handle both field names
+        personalAuthority: body.personalAuthority,
+        company: body.company,
+        areaAuthority: body.areaAuthority,
+        siteControllerName: body.siteControllerName,
         safetyMeasures: body.safetyMeasures,
+        relatedDocuments: body.relatedDocuments ? JSON.stringify(body.relatedDocuments) : null,
         coordinates: body.coordinates ? (typeof body.coordinates === 'string' ? body.coordinates : JSON.stringify(body.coordinates)) : null,
         status: body.status || existingPermit.status,
         updatedAt: new Date()

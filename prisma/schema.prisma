@@ -66,6 +66,14 @@ model PermitPlanning {
   riskLevel        RiskLevel @default(LOW)
   startDate        DateTime @map("start_date")
   endDate          DateTime @map("end_date")
+  
+  // Personnel information
+  personalAuthority String?  @map("personal_authority") @db.VarChar(255)
+  company          String?  @db.VarChar(255)
+  areaAuthority    String?  @map("area_authority") @db.VarChar(255)
+  siteControllerName String? @map("site_controller_name") @db.VarChar(255)
+  
+  // Legacy fields (for backward compatibility)
   contractor       String?  @db.VarChar(255)
   supervisor       String?  @db.VarChar(255)
   
@@ -73,6 +81,7 @@ model PermitPlanning {
   ppeRequired      String?  @map("ppe_required") @db.Text
   safetyMeasures   String?  @map("safety_measures") @db.Text
   emergencyContact String?  @map("emergency_contact") @db.VarChar(255)
+  relatedDocuments String?  @map("related_documents") @db.Text // JSON string
   
   // Status
   status           PermitStatus @default(DRAFT)
@@ -138,14 +147,10 @@ enum LocationZone {
 }
 
 enum WorkType {
-  HOT_WORK        // Pekerjaan Panas
-  COLD_WORK       // Pekerjaan Dingin
-  CONFINED_SPACE  // Ruang Terbatas
-  HEIGHT_WORK     // Pekerjaan Ketinggian
-  EXCAVATION      // Penggalian
-  ELECTRICAL      // Kelistrikan
-  MAINTENANCE     // Pemeliharaan
-  CONSTRUCTION    // Konstruksi
+  COLD_WORK           // Cold Work (pin biru)
+  COLD_WORK_BREAKING  // Cold Work - breaking containment (pin hitam)
+  HOT_WORK_SPARK      // Hot work - spark potential (pin kuning)
+  HOT_WORK_FLAME      // Hot work - naked flame (pin merah)
   
   @@map("work_type")
 }
