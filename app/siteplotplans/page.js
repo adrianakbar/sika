@@ -48,9 +48,9 @@ function SitePlotPlans() {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            supervisor: permit.supervisor || "N/A",
+            personalAuthority: permit.personalAuthority || "N/A",
             zone: permit.zone,
-            contractor: permit.contractor,
+            company: permit.company,
             riskLevel: permit.riskLevel,
           };
         });
@@ -539,18 +539,18 @@ function SitePlotPlans() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Supervisor
+                    Personal Authority
                   </label>
                   <div className="font-medium mt-1">
-                    {selectedPoint.supervisor}
+                    {selectedPoint.personalAuthority}
                   </div>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Kontraktor
+                    Company
                   </label>
                   <div className="font-medium mt-1">
-                    {selectedPoint.contractor || "N/A"}
+                    {selectedPoint.company || "N/A"}
                   </div>
                 </div>
               </div>
