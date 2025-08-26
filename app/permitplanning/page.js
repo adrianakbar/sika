@@ -107,8 +107,14 @@ function PermitPlanning() {
   };
 
   const handleEdit = (permit) => {
-    setEditingPermit(permit);
-    setShowForm(true);
+    console.log('handleEdit called with permit:', permit);
+    try {
+      setEditingPermit(permit);
+      setShowForm(true);
+    } catch (error) {
+      console.error('Error in handleEdit:', error);
+      showNotification('Error opening edit form', 'error');
+    }
   };
 
   const handleVisualizationPointClick = (point) => {

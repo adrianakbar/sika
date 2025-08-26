@@ -22,6 +22,7 @@ export default function PermitPlanningForm({
     areaAuthority: "",
     siteControllerName: "",
     safetyMeasures: "",
+    emergencyProcedure: "",
     status: "DRAFT",
     relatedDocuments: {
       l2ra: { checked: false, number: "" },
@@ -65,6 +66,30 @@ export default function PermitPlanningForm({
 
   useEffect(() => {
     if (editData) {
+      console.log('Edit data received:', editData);
+      
+      // Parse relatedDocuments if it's a string (from database)
+      let parsedRelatedDocuments = {
+        l2ra: { checked: false, number: "" },
+        confineSpace: { checked: false, number: "" },
+        tkiTko: { checked: false, number: "" },
+        other: { checked: false, number: "" },
+      };
+      
+      if (editData.relatedDocuments) {
+        try {
+          if (typeof editData.relatedDocuments === 'string') {
+            parsedRelatedDocuments = JSON.parse(editData.relatedDocuments);
+          } else {
+            parsedRelatedDocuments = editData.relatedDocuments;
+          }
+          console.log('Parsed relatedDocuments:', parsedRelatedDocuments);
+        } catch (error) {
+          console.error('Error parsing relatedDocuments:', error);
+          // Use default values if parsing fails
+        }
+      }
+
       setFormData({
         ...editData,
         startDate: editData.startDate ? editData.startDate.split("T")[0] : "",
@@ -74,13 +99,12 @@ export default function PermitPlanningForm({
         company: editData.company || "",
         areaAuthority: editData.areaAuthority || "",
         siteControllerName: editData.siteControllerName || "",
-        relatedDocuments: editData.relatedDocuments || {
-          l2ra: { checked: false, number: "" },
-          confineSpace: { checked: false, number: "" },
-          tkiTko: { checked: false, number: "" },
-          other: { checked: false, number: "" },
-        },
+        safetyMeasures: editData.safetyMeasures || "",
+        emergencyProcedure: editData.emergencyProcedure || "",
+        relatedDocuments: parsedRelatedDocuments,
       });
+      
+      console.log('Form data set for editing');
     }
   }, [editData]);
 
@@ -230,6 +254,7 @@ export default function PermitPlanningForm({
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      console.log('Validation errors:', validationErrors);
       return;
     }
 
@@ -251,11 +276,15 @@ export default function PermitPlanningForm({
         endDate: new Date(formData.endDate).toISOString(),
       };
 
+      console.log('Submitting data:', submitData);
+
       const url = editData
         ? `/api/permit-planning/${editData.id}`
         : "/api/permit-planning";
 
       const method = editData ? "PUT" : "POST";
+
+      console.log(`Making ${method} request to ${url}`);
 
       const response = await fetch(url, {
         method,
@@ -266,6 +295,7 @@ export default function PermitPlanningForm({
       });
 
       const result = await response.json();
+      console.log('Response:', result);
 
       if (result.success) {
         if (onSubmitSuccess) {
@@ -287,6 +317,7 @@ export default function PermitPlanningForm({
             areaAuthority: "",
             siteControllerName: "",
             safetyMeasures: "",
+            emergencyProcedure: "",
             status: "DRAFT",
             relatedDocuments: {
               l2ra: { checked: false, number: "" },
@@ -299,6 +330,7 @@ export default function PermitPlanningForm({
 
         setErrors({});
       } else {
+        console.error('Submission failed:', result);
         setErrors({ submit: result.message || "Failed to save permit" });
       }
     } catch (error) {
