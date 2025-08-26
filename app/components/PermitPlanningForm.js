@@ -7,9 +7,10 @@ export default function PermitPlanningForm({
   onSubmitSuccess,
   editData = null,
   onCancel,
-  showNotification
+  showNotification,
 }) {
   const [formData, setFormData] = useState({
+    permitNumber: "",
     workType: "",
     workDescription: "",
     riskLevel: "LOW",
@@ -66,8 +67,8 @@ export default function PermitPlanningForm({
 
   useEffect(() => {
     if (editData) {
-      console.log('Edit data received:', editData);
-      
+      console.log("Edit data received:", editData);
+
       // Parse relatedDocuments if it's a string (from database)
       let parsedRelatedDocuments = {
         l2ra: { checked: false, number: "" },
@@ -75,17 +76,17 @@ export default function PermitPlanningForm({
         tkiTko: { checked: false, number: "" },
         other: { checked: false, number: "" },
       };
-      
+
       if (editData.relatedDocuments) {
         try {
-          if (typeof editData.relatedDocuments === 'string') {
+          if (typeof editData.relatedDocuments === "string") {
             parsedRelatedDocuments = JSON.parse(editData.relatedDocuments);
           } else {
             parsedRelatedDocuments = editData.relatedDocuments;
           }
-          console.log('Parsed relatedDocuments:', parsedRelatedDocuments);
+          console.log("Parsed relatedDocuments:", parsedRelatedDocuments);
         } catch (error) {
-          console.error('Error parsing relatedDocuments:', error);
+          console.error("Error parsing relatedDocuments:", error);
           // Use default values if parsing fails
         }
       }
@@ -103,8 +104,8 @@ export default function PermitPlanningForm({
         emergencyProcedure: editData.emergencyProcedure || "",
         relatedDocuments: parsedRelatedDocuments,
       });
-      
-      console.log('Form data set for editing');
+
+      console.log("Form data set for editing");
     }
   }, [editData]);
 
@@ -210,6 +211,7 @@ export default function PermitPlanningForm({
       console.error("Error parsing user data from localStorage:", error);
     }
 
+    if (!formData.permitNumber) newErrors.permitNumber = "Permit number is required";
     if (!formData.workType) newErrors.workType = "Work type is required";
     if (!formData.workDescription)
       newErrors.workDescription = "Work description is required";
@@ -218,10 +220,13 @@ export default function PermitPlanningForm({
     if (!formData.endDate) newErrors.endDate = "End date is required";
     if (!userId || userId === "undefined")
       newErrors.userId = "User ID is required. Please login again.";
-    if (!formData.personalAuthority) newErrors.personalAuthority = "Personal Authority is required";
+    if (!formData.personalAuthority)
+      newErrors.personalAuthority = "Personal Authority is required";
     if (!formData.company) newErrors.company = "Company is required";
-    if (!formData.areaAuthority) newErrors.areaAuthority = "Area Authority is required";
-    if (!formData.siteControllerName) newErrors.siteControllerName = "Site Controller name is required";
+    if (!formData.areaAuthority)
+      newErrors.areaAuthority = "Area Authority is required";
+    if (!formData.siteControllerName)
+      newErrors.siteControllerName = "Site Controller name is required";
 
     if (formData.coordinates && !validateCoordinates(formData.coordinates)) {
       newErrors.coordinates =
@@ -254,7 +259,7 @@ export default function PermitPlanningForm({
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      console.log('Validation errors:', validationErrors);
+      console.log("Validation errors:", validationErrors);
       return;
     }
 
@@ -276,7 +281,7 @@ export default function PermitPlanningForm({
         endDate: new Date(formData.endDate).toISOString(),
       };
 
-      console.log('Submitting data:', submitData);
+      console.log("Submitting data:", submitData);
 
       const url = editData
         ? `/api/permit-planning/${editData.id}`
@@ -295,7 +300,7 @@ export default function PermitPlanningForm({
       });
 
       const result = await response.json();
-      console.log('Response:', result);
+      console.log("Response:", result);
 
       if (result.success) {
         if (onSubmitSuccess) {
@@ -305,6 +310,7 @@ export default function PermitPlanningForm({
         if (!editData) {
           // Reset form for new entries
           setFormData({
+            permitNumber: "",
             workType: "",
             workDescription: "",
             riskLevel: "LOW",
@@ -330,7 +336,7 @@ export default function PermitPlanningForm({
 
         setErrors({});
       } else {
-        console.error('Submission failed:', result);
+        console.error("Submission failed:", result);
         setErrors({ submit: result.message || "Failed to save permit" });
       }
     } catch (error) {
@@ -350,8 +356,10 @@ export default function PermitPlanningForm({
     // Show brief success feedback using notification system
     if (coordinates.type === "coordinate" && showNotification) {
       showNotification(
-        `✓ Coordinates set: ${coordinates.x.toFixed(1)}, ${coordinates.y.toFixed(1)}`,
-        'success'
+        `✓ Coordinates set: ${coordinates.x.toFixed(
+          1
+        )}, ${coordinates.y.toFixed(1)}`,
+        "success"
       );
     }
   };
@@ -394,6 +402,16 @@ export default function PermitPlanningForm({
               <p className="text-red-500 text-sm mt-1">{errors.workType}</p>
             )}
           </div>
+
+          <Input
+            label="Permit Number *"
+            name="permitNumber"
+            value={formData.permitNumber}
+            onChange={handleChange}
+            placeholder="Enter unique permit number (e.g., WP-2025-001)"
+            error={errors.permitNumber}
+            required
+          />
 
           <div>
             <label className="block text-sm font-medium text-quaternary mb-1">

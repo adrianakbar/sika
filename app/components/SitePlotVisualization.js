@@ -132,7 +132,7 @@ export default function SitePlotVisualization({
         <div 
           className="relative w-full h-96 bg-gray-100 cursor-crosshair"
           style={{
-            backgroundImage: "url('/images/site-plan-layout.jpeg')",
+            backgroundImage: "url('/images/site-plan-layout.png')",
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center'

@@ -47,6 +47,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const {
+      permitNumber,
       workDescription,
       zone, // Using zone instead of workLocation to match form
       workType,
@@ -84,11 +85,25 @@ export async function POST(request) {
       }, { status: 404 });
     }
 
-    // Generate permit number automatically
-    const today = new Date();
-    const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
-    const count = await prisma.permitPlanning.count();
-    const permitNumber = `PERMIT-${dateStr}-${String(count + 1).padStart(4, '0')}`;
+    // Use permit number from request body instead of generating automatically
+    if (!permitNumber || permitNumber.trim() === '') {
+      return Response.json({
+        success: false,
+        message: 'Permit number is required'
+      }, { status: 400 });
+    }
+
+    // Check if permit number already exists
+    const existingPermit = await prisma.permitPlanning.findFirst({
+      where: { permitNumber: permitNumber.trim() }
+    });
+
+    if (existingPermit) {
+      return Response.json({
+        success: false,
+        message: 'Permit number already exists. Please use a different permit number.'
+      }, { status: 400 });
+    }
 
     // Parse coordinates if provided
     let coordinatesData = null;
