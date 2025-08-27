@@ -425,7 +425,7 @@ function PermitPlanning() {
                 {/* Personnel Information */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <strong>Personal Authority:</strong> {selectedPermit.personalAuthority || 'N/A'}
+                    <strong>Performing Authority:</strong> {selectedPermit.performingAuthority || 'N/A'}
                   </div>
                   <div>
                     <strong>Company:</strong> {selectedPermit.company || 'N/A'}

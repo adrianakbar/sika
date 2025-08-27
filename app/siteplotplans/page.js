@@ -48,7 +48,7 @@ function SitePlotPlans() {
               hour: "2-digit",
               minute: "2-digit",
             }),
-            personalAuthority: permit.personalAuthority || "N/A",
+            performingAuthority: permit.performingAuthority || "N/A",
             zone: permit.zone,
             company: permit.company,
             riskLevel: permit.riskLevel,
@@ -539,10 +539,10 @@ function SitePlotPlans() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Personal Authority
+                    Performing Authority
                   </label>
                   <div className="font-medium mt-1">
-                    {selectedPoint.personalAuthority}
+                    {selectedPoint.performingAuthority}
                   </div>
                 </div>
                 <div>

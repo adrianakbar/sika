@@ -67,8 +67,8 @@ model PermitPlanning {
   startDate        DateTime @map("start_date")
   endDate          DateTime @map("end_date")
   
-  // Personnel information
-  personalAuthority String?  @map("personal_authority") @db.VarChar(255)
+  // Personnel information (Performing Authority)
+  performingAuthority String?  @map("performing_authority") @db.VarChar(255)
   company          String?  @db.VarChar(255)
   areaAuthority    String?  @map("area_authority") @db.VarChar(255)
   siteControllerName String? @map("site_controller_name") @db.VarChar(255)

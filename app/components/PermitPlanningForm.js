@@ -18,7 +18,7 @@ export default function PermitPlanningForm({
     coordinates: "",
     startDate: "",
     endDate: "",
-    personalAuthority: "",
+    performingAuthority: "",
     company: "",
     areaAuthority: "",
     siteControllerName: "",
@@ -96,7 +96,7 @@ export default function PermitPlanningForm({
         startDate: editData.startDate ? editData.startDate.split("T")[0] : "",
         endDate: editData.endDate ? editData.endDate.split("T")[0] : "",
         coordinates: editData.coordinates || "",
-        personalAuthority: editData.personalAuthority || "",
+        performingAuthority: editData.performingAuthority || "",
         company: editData.company || "",
         areaAuthority: editData.areaAuthority || "",
         siteControllerName: editData.siteControllerName || "",
@@ -220,8 +220,8 @@ export default function PermitPlanningForm({
     if (!formData.endDate) newErrors.endDate = "End date is required";
     if (!userId || userId === "undefined")
       newErrors.userId = "User ID is required. Please login again.";
-    if (!formData.personalAuthority)
-      newErrors.personalAuthority = "Personal Authority is required";
+    if (!formData.performingAuthority)
+      newErrors.performingAuthority = "Performing Authority is required";
     if (!formData.company) newErrors.company = "Company is required";
     if (!formData.areaAuthority)
       newErrors.areaAuthority = "Area Authority is required";
@@ -318,7 +318,7 @@ export default function PermitPlanningForm({
             coordinates: "",
             startDate: "",
             endDate: "",
-            personalAuthority: "",
+            performingAuthority: "",
             company: "",
             areaAuthority: "",
             siteControllerName: "",
@@ -765,15 +765,15 @@ export default function PermitPlanningForm({
             Personnel
           </h3>
 
-          {/* First row: Personal Authority, Company */}
+          {/* First row: Performing Authority, Company */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Input
-              label="Personal Authority *"
-              name="personalAuthority"
-              value={formData.personalAuthority}
+              label="Performing Authority *"
+              name="performingAuthority"
+              value={formData.performingAuthority}
               onChange={handleChange}
-              placeholder="Personal authority"
-              error={errors.personalAuthority}
+              placeholder="Performing authority"
+              error={errors.performingAuthority}
               required
             />
 

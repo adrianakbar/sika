@@ -69,7 +69,7 @@ export async function PUT(request, { params }) {
         riskLevel: body.riskLevel,
         startDate: new Date(body.startDate),
         endDate: new Date(body.endDate),
-        personalAuthority: body.personalAuthority,
+        performingAuthority: body.performingAuthority,
         company: body.company,
         areaAuthority: body.areaAuthority,
         siteControllerName: body.siteControllerName,
