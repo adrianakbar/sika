@@ -280,7 +280,7 @@ function SitePlotPlans() {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50 min-h-screen">
       <div className="p-4 lg:p-6">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -293,151 +293,154 @@ function SitePlotPlans() {
                 Visualisasi lokasi kerja dan permit planning
               </p>
             </div>
-            <h1 className="text-3xl font-bold text-quaternary hidden lg:block">
-              Site Plot Plans
-            </h1>
-            <p className="text-gray-600 mt-2">ORF PHE WMO</p>
-            <div className="mt-2">
-              <a
-                href="/permit-planning"
-                className="text-primary hover:text-red-600 text-sm font-medium"
-              >
-                → Work Permit Planning
-              </a>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-500">1-10 Juli 2025</div>
-            <div className="text-sm text-gray-500">History Permit</div>
-            <div className="mt-2">
-              <span className="text-xs text-gray-500">Total Permit</span>
-              <div className="text-4xl font-bold text-quaternary">
-                {loading ? "..." : plotPoints.length}
+            <div className="text-right">
+              <div className="text-sm text-gray-500">ORF PHE WMO</div>
+              <div className="text-sm text-gray-500 mt-1">1-10 Juli 2025</div>
+              <div className="text-sm text-gray-500">History Permit</div>
+              <div className="mt-2">
+                <span className="text-xs text-gray-500">Total Permit</span>
+                <div className="text-4xl font-bold text-quaternary">
+                  {loading ? "..." : plotPoints.length}
+                </div>
+              </div>
+              <div className="mt-2">
+                <a
+                  href="/permitplanning"
+                  className="text-primary hover:text-red-600 text-sm font-medium"
+                >
+                  → Work Permit Planning
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Filter Legend */}
-        <div className="space-y-4">
-          {/* Work Type Filter */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              Filter by Work Type:
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {filterOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setSelectedFilter(option.value)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all ${
-                    selectedFilter === option.value
-                      ? "bg-quaternary text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
-                  }`}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: option.color }}
-                  ></div>
-                  <span className="font-medium">{option.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Area Filter */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              Filter by Area:
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {areaOptions.map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setSelectedArea(option.value)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all ${
-                    selectedArea === option.value
-                      ? "bg-quaternary text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
-                  }`}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: option.color }}
-                  ></div>
-                  <span className="font-medium">{option.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Layout 2 Baris - Baris Pertama: Denah */}
-      <div className="mb-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-quaternary mb-6">
-            Layout Denah Site
-          </h2>
-          <div className="relative w-full">
-            <div className="relative inline-block w-full">
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-                <Image
-                  src="/images/layout-orf.png"
-                  alt="Site Plot Plan Layout"
-                  width={1200}
-                  height={800}
-                  className="w-full h-auto rounded-lg border"
-                  priority
-                />
-
-                {/* Plot Points Overlay */}
-                {loading ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Loading permits...
-                      </p>
+        {/* 2 Column Layout */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 h-[calc(100vh-250px)]">
+          {/* Left Column - Site Layout Map */}
+          <div className="xl:col-span-7 flex flex-col">
+            <div className="bg-white rounded-lg shadow-md p-6 flex-1">
+              {/* Filter Section */}
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-quaternary mb-4">
+                  Layout Denah Site
+                </h2>
+                
+                {/* Filter Legend */}
+                <div className="space-y-4 mb-6">
+                  {/* Work Type Filter */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                      Filter by Work Type:
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {filterOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setSelectedFilter(option.value)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all ${
+                            selectedFilter === option.value
+                              ? "bg-quaternary text-white"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                        >
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: option.color }}
+                          ></div>
+                          <span className="font-medium">{option.label}</span>
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ) : (
-                  getFilteredPoints().map((point) => (
-                    <button
-                      key={point.id}
-                      onClick={() => handlePointClick(point)}
-                      className={`absolute transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white shadow-lg transition-all hover:scale-125 ${
-                        selectedPoint?.id === point.id
-                          ? "scale-125 ring-4 ring-blue-200"
-                          : ""
-                      }`}
-                      style={{
-                        left: `${point.x}%`,
-                        top: `${point.y}%`,
-                        backgroundColor: getPointColor(
-                          point.type,
-                          point.status
-                        ),
-                      }}
-                      title={`${point.permitNumber} - ${point.location}`}
-                    ></button>
-                  ))
-                )}
+
+                  {/* Area Filter */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                      Filter by Area:
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {areaOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setSelectedArea(option.value)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all ${
+                            selectedArea === option.value
+                              ? "bg-quaternary text-white"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                        >
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: option.color }}
+                          ></div>
+                          <span className="font-medium">{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Site Layout Map */}
+              <div className="relative w-full flex-1">
+                <div className="relative inline-block w-full h-full">
+                  <div className="relative bg-gray-100 rounded-lg overflow-hidden h-full min-h-[400px]">
+                    <Image
+                      src="/images/layout-orf.png"
+                      alt="Site Plot Plan Layout"
+                      width={1200}
+                      height={800}
+                      className="w-full h-full object-contain rounded-lg border"
+                      priority
+                    />
+
+                    {/* Plot Points Overlay */}
+                    {loading ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-lg">
+                        <div className="text-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Loading permits...
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      getFilteredPoints().map((point) => (
+                        <button
+                          key={point.id}
+                          onClick={() => handlePointClick(point)}
+                          className={`absolute transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-white shadow-lg transition-all hover:scale-125 ${
+                            selectedPoint?.id === point.id
+                              ? "scale-125 ring-4 ring-blue-200"
+                              : ""
+                          }`}
+                          style={{
+                            left: `${point.x}%`,
+                            top: `${point.y}%`,
+                            backgroundColor: getPointColor(
+                              point.type,
+                              point.status
+                            ),
+                          }}
+                          title={`${point.permitNumber} - ${point.location}`}
+                        ></button>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Layout 2 Baris - Baris Kedua: Detail Permit */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Detail Permit */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-semibold text-quaternary mb-6">
-            Detail Permit
-          </h3>
-          {selectedPoint ? (
+          {/* Right Column - Permit Details */}
+          <div className="xl:col-span-5 flex flex-col space-y-6">
+            {/* Detail Permit */}
+            <div className="bg-white rounded-lg shadow-md p-6 flex-1">
+              <h3 className="text-xl font-semibold text-quaternary mb-6">
+                Detail Permit
+              </h3>
+              {selectedPoint ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -578,110 +581,109 @@ function SitePlotPlans() {
                 </div>
               )}
             </div>
-          ) : (
-            <div className="text-center text-gray-500 py-12">
-              <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zM9 9a1 1 0 112 0v4a1 1 0 11-2 0V9zm1-3a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
-                Pilih Permit
-              </h4>
-              <p className="text-sm">
-                Klik pada titik di denah untuk melihat detail permit yang dipilih
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Statistik dan Ringkasan */}
-        <div className="space-y-6">
-          {/* Statistik Permit */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-semibold text-quaternary mb-6">
-              Statistik Permit
-            </h3>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-pulse space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                </div>
-              </div>
             ) : (
-              <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-blue-700">Total Permit</span>
-                    <span className="text-2xl font-bold text-blue-800">
-                      {getFilteredPoints().length}
-                    </span>
-                  </div>
+              <div className="text-center text-gray-500 py-12">
+                <div className="w-16 h-16 mx-auto mb-4 text-gray-300">
+                  <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zM9 9a1 1 0 112 0v4a1 1 0 11-2 0V9zm1-3a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                  </svg>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-red-50 p-4 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-red-600">
-                        {
-                          getFilteredPoints().filter((p) =>
-                            p.type.startsWith("HW")
-                          ).length
-                        }
-                      </div>
-                      <div className="text-xs text-red-600 font-medium">Hot Work</div>
-                    </div>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-blue-600">
-                        {
-                          getFilteredPoints().filter((p) =>
-                            p.type.startsWith("CW")
-                          ).length
-                        }
-                      </div>
-                      <div className="text-xs text-blue-600 font-medium">Cold Work</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-600">Aktif</span>
-                    <span className="font-semibold text-green-600">
-                      {
-                        getFilteredPoints().filter(
-                          (p) => p.status === "active"
-                        ).length
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-600">Menunggu</span>
-                    <span className="font-semibold text-yellow-600">
-                      {
-                        getFilteredPoints().filter(
-                          (p) => p.status === "pending"
-                        ).length
-                      }
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-600">Selesai</span>
-                    <span className="font-semibold text-gray-600">
-                      {
-                        getFilteredPoints().filter(
-                          (p) => p.status === "completed"
-                        ).length
-                      }
-                    </span>
-                  </div>
-                </div>
+                <h4 className="text-lg font-medium text-gray-900 mb-2">
+                  Pilih Permit
+                </h4>
+                <p className="text-sm">
+                  Klik pada titik di denah untuk melihat detail permit yang dipilih
+                </p>
               </div>
             )}
+            </div>
+
+            {/* Statistik dan Ringkasan */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-semibold text-quaternary mb-6">
+                Statistik Permit
+              </h3>
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-blue-700">Total Permit</span>
+                      <span className="text-2xl font-bold text-blue-800">
+                        {getFilteredPoints().length}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-red-50 p-4 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-red-600">
+                          {
+                            getFilteredPoints().filter((p) =>
+                              p.type.startsWith("HW")
+                            ).length
+                          }
+                        </div>
+                        <div className="text-xs text-red-600 font-medium">Hot Work</div>
+                      </div>
+                    </div>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-600">
+                          {
+                            getFilteredPoints().filter((p) =>
+                              p.type.startsWith("CW")
+                            ).length
+                          }
+                        </div>
+                        <div className="text-xs text-blue-600 font-medium">Cold Work</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Aktif</span>
+                      <span className="font-semibold text-green-600">
+                        {
+                          getFilteredPoints().filter(
+                            (p) => p.status === "active"
+                          ).length
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Menunggu</span>
+                      <span className="font-semibold text-yellow-600">
+                        {
+                          getFilteredPoints().filter(
+                            (p) => p.status === "pending"
+                          ).length
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">Selesai</span>
+                      <span className="font-semibold text-gray-600">
+                        {
+                          getFilteredPoints().filter(
+                            (p) => p.status === "completed"
+                          ).length
+                        }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
