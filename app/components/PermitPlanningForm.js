@@ -23,6 +23,7 @@ export default function PermitPlanningForm({
     areaAuthority: "",
     siteControllerName: "",
     safetyMeasures: "",
+    equipmentNeeded: "",
     emergencyProcedure: "",
     status: "DRAFT",
     relatedDocuments: {
@@ -129,6 +130,11 @@ export default function PermitPlanningForm({
 
       setFormData({
         ...editData,
+        permitNumber: editData.permitNumber || "",
+        workType: editData.workType || "",
+        workDescription: editData.workDescription || "",
+        riskLevel: editData.riskLevel || "LOW",
+        zone: editData.zone || "",
         startDate: editData.startDate ? editData.startDate.split("T")[0] : "",
         endDate: editData.endDate ? editData.endDate.split("T")[0] : "",
         coordinates: normalizeCoordinates(editData.coordinates),
@@ -137,7 +143,9 @@ export default function PermitPlanningForm({
         areaAuthority: editData.areaAuthority || "",
         siteControllerName: editData.siteControllerName || "",
         safetyMeasures: editData.safetyMeasures || "",
-        emergencyProcedure: editData.emergencyProcedure || "",
+        equipmentNeeded: editData.equipmentNeeded || editData.ppeRequired || "",
+        emergencyProcedure: editData.emergencyProcedure || editData.emergencyContact || "",
+        status: editData.status || "DRAFT",
         relatedDocuments: parsedRelatedDocuments,
       });
 
@@ -359,6 +367,7 @@ export default function PermitPlanningForm({
             areaAuthority: "",
             siteControllerName: "",
             safetyMeasures: "",
+            equipmentNeeded: "",
             emergencyProcedure: "",
             status: "DRAFT",
             relatedDocuments: {

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 // GET - Mendapatkan permit planning berdasarkan ID
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     const permit = await prisma.permitPlanning.findUnique({
       where: { id: parseInt(id) },
@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
 // PUT - Update permit planning
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     // Check if permit exists
@@ -57,11 +57,29 @@ export async function PUT(request, { params }) {
         message: 'Permit not found'
       }, { status: 404 });
     }
+
+    // Check if permit number is being changed and if the new permit number already exists
+    if (body.permitNumber && body.permitNumber !== existingPermit.permitNumber) {
+      const permitWithSameNumber = await prisma.permitPlanning.findFirst({
+        where: { 
+          permitNumber: body.permitNumber,
+          id: { not: parseInt(id) } // Exclude current permit from check
+        }
+      });
+      
+      if (permitWithSameNumber) {
+        return Response.json({
+          success: false,
+          message: 'Permit number already exists. Please use a different permit number.'
+        }, { status: 400 });
+      }
+    }
     
     // Update permit
     const updatedPermit = await prisma.permitPlanning.update({
       where: { id: parseInt(id) },
       data: {
+        permitNumber: body.permitNumber,
         workDescription: body.workDescription,
         workLocation: body.workLocation || body.zone, // fallback to zone if workLocation not provided
         workType: body.workType,
@@ -74,6 +92,8 @@ export async function PUT(request, { params }) {
         areaAuthority: body.areaAuthority,
         siteControllerName: body.siteControllerName,
         safetyMeasures: body.safetyMeasures,
+        ppeRequired: body.equipmentNeeded || body.ppeRequired,
+        emergencyContact: body.emergencyProcedure || body.emergencyContact,
         relatedDocuments: body.relatedDocuments ? JSON.stringify(body.relatedDocuments) : null,
         coordinates: body.coordinates ? (typeof body.coordinates === 'string' ? body.coordinates : JSON.stringify(body.coordinates)) : null,
         status: body.status || existingPermit.status,
@@ -109,7 +129,7 @@ export async function PUT(request, { params }) {
 // DELETE - Hapus permit planning
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Check if permit exists
     const existingPermit = await prisma.permitPlanning.findUnique({
