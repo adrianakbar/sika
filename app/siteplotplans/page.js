@@ -191,8 +191,14 @@ function SitePlotPlans() {
 
   const getPermitTypeCode = (workType) => {
     const typeMap = {
+      // Work types from permit planning form
+      COLD_WORK: "CW",                    // blue pin
+      COLD_WORK_BREAKING: "CW-BC",       // black pin
+      HOT_WORK_SPARK: "HW-SP",           // yellow pin
+      HOT_WORK_FLAME: "HW-NF",           // red pin
+      
+      // Legacy types (keeping for backward compatibility)
       HOT_WORK: "HW-SP",
-      COLD_WORK: "CW",
       ELECTRICAL: "CW",
       MECHANICAL: "CW",
       EXCAVATION: "CW-BC",
@@ -241,10 +247,10 @@ function SitePlotPlans() {
 
   const filterOptions = [
     { value: "all", label: "Semua", color: "#6B7280" },
-    { value: "HW-NF", label: "HW - NF", color: "#EF4444" },
-    { value: "HW-SP", label: "HW - SP", color: "#F59E0B" },
-    { value: "CW", label: "CW", color: "#3B82F6" },
-    { value: "CW-BC", label: "CW - BC", color: "#1F2937" },
+    { value: "HW-NF", label: "Hot Work - Naked Flame (Red)", color: "#EF4444" },
+    { value: "HW-SP", label: "Hot Work - Spark Potential (Yellow)", color: "#F59E0B" },
+    { value: "CW", label: "Cold Work (Blue)", color: "#3B82F6" },
+    { value: "CW-BC", label: "Cold Work - Breaking Containment (Black)", color: "#1F2937" },
   ];
 
   const areaOptions = [

@@ -65,6 +65,42 @@ export default function PermitPlanningForm({
 
   const riskLevels = ["LOW", "MEDIUM", "HIGH"];
 
+  // Function to normalize coordinates to "x,y" format
+  const normalizeCoordinates = (coords) => {
+    if (!coords) return "";
+    
+    // If already in "x,y" or "x;y" format, convert to "x,y"
+    if (typeof coords === "string") {
+      if (coords.includes(",") || coords.includes(";")) {
+        const separator = coords.includes(",") ? "," : ";";
+        const [x, y] = coords.split(separator);
+        const xNum = parseFloat(x?.trim());
+        const yNum = parseFloat(y?.trim());
+        if (!isNaN(xNum) && !isNaN(yNum)) {
+          return `${xNum},${yNum}`;
+        }
+      }
+      
+      // Try to parse as JSON
+      try {
+        const parsed = JSON.parse(coords);
+        if (parsed.x !== undefined && parsed.y !== undefined) {
+          return `${parsed.x},${parsed.y}`;
+        }
+      } catch {
+        // Not JSON, return as is
+        return coords;
+      }
+    }
+    
+    // If it's an object with x,y properties
+    if (typeof coords === "object" && coords.x !== undefined && coords.y !== undefined) {
+      return `${coords.x},${coords.y}`;
+    }
+    
+    return "";
+  };
+
   useEffect(() => {
     if (editData) {
       console.log("Edit data received:", editData);
@@ -95,7 +131,7 @@ export default function PermitPlanningForm({
         ...editData,
         startDate: editData.startDate ? editData.startDate.split("T")[0] : "",
         endDate: editData.endDate ? editData.endDate.split("T")[0] : "",
-        coordinates: editData.coordinates || "",
+        coordinates: normalizeCoordinates(editData.coordinates),
         performingAuthority: editData.performingAuthority || "",
         company: editData.company || "",
         areaAuthority: editData.areaAuthority || "",
