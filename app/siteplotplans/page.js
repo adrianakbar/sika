@@ -229,35 +229,35 @@ function SitePlotPlans() {
 
   const getPermitTypeCode = (workType) => {
     const typeMap = {
-      // Work types from permit planning form
-      COLD_WORK: "CW",                    // blue pin
-      COLD_WORK_BREAKING: "CW-BC",       // black pin
-      HOT_WORK_SPARK: "HW-SP",           // yellow pin
-      HOT_WORK_FLAME: "HW-NF",           // red pin
+      // Work types from permit planning form - Updated names
+      COLD_WORK: "GW",                    // General Work (blue pin)
+      COLD_WORK_BREAKING: "BC",          // Breaking Containment (black pin)
+      HOT_WORK_SPARK: "CW",              // Critical Work (yellow pin)
+      HOT_WORK_FLAME: "HW",              // Hot Work (red pin)
       
       // Legacy types (keeping for backward compatibility)
-      HOT_WORK: "HW-SP",
-      ELECTRICAL: "CW",
-      MECHANICAL: "CW",
-      EXCAVATION: "CW-BC",
-      CONFINED_SPACE: "HW-SP",
-      HEIGHT_WORK: "CW-BC",
-      MAINTENANCE: "CW",
+      HOT_WORK: "CW",                    // Critical Work
+      ELECTRICAL: "GW",                  // General Work
+      MECHANICAL: "GW",                  // General Work
+      EXCAVATION: "BC",                  // Breaking Containment
+      CONFINED_SPACE: "CW",              // Critical Work
+      HEIGHT_WORK: "BC",                 // Breaking Containment
+      MAINTENANCE: "GW",                 // General Work
     };
-    return typeMap[workType] || "CW";
+    return typeMap[workType] || "GW";
   };
 
   const getPointColor = (type, status) => {
     // Color based on work type only, not status
     switch (type) {
-      case "HW-NF":
-        return "#EF4444"; // red
-      case "HW-SP":
-        return "#F59E0B"; // yellow/amber
+      case "HW":
+        return "#EF4444"; // red - Hot Work
       case "CW":
-        return "#3B82F6"; // blue
-      case "CW-BC":
-        return "#1F2937"; // black
+        return "#F59E0B"; // yellow - Critical Work
+      case "GW":
+        return "#3B82F6"; // blue - General Work
+      case "BC":
+        return "#1F2937"; // black - Breaking Containment
       default:
         return "#6B7280"; // gray
     }
@@ -283,10 +283,10 @@ function SitePlotPlans() {
 
   const filterOptions = [
     { value: "all", label: "Semua", color: "#6B7280" },
-    { value: "HW-NF", label: "Hot Work - Naked Flame (Red)", color: "#EF4444" },
-    { value: "HW-SP", label: "Hot Work - Spark Potential (Yellow)", color: "#F59E0B" },
-    { value: "CW", label: "Cold Work (Blue)", color: "#3B82F6" },
-    { value: "CW-BC", label: "Cold Work - Breaking Containment (Black)", color: "#1F2937" },
+    { value: "HW", label: "Hot Work (Red)", color: "#EF4444" },
+    { value: "CW", label: "Critical Work (Yellow)", color: "#F59E0B" },
+    { value: "GW", label: "General Work (Blue)", color: "#3B82F6" },
+    { value: "BC", label: "Breaking Containment (Black)", color: "#1F2937" },
   ];
 
   const areaOptions = [
@@ -662,29 +662,53 @@ function SitePlotPlans() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-red-50 p-3 rounded-lg">
                       <div className="text-center">
                         <div className="text-lg font-bold text-red-600">
                           {
                             getFilteredPoints().filter((p) =>
-                              p.type.startsWith("HW")
+                              p.type === "HW"
                             ).length
                           }
                         </div>
                         <div className="text-xs text-red-600 font-medium">Hot Work</div>
                       </div>
                     </div>
-                    <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="bg-yellow-50 p-3 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-yellow-600">
+                          {
+                            getFilteredPoints().filter((p) =>
+                              p.type === "CW"
+                            ).length
+                          }
+                        </div>
+                        <div className="text-xs text-yellow-600 font-medium">Critical Work</div>
+                      </div>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg">
                       <div className="text-center">
                         <div className="text-lg font-bold text-blue-600">
                           {
                             getFilteredPoints().filter((p) =>
-                              p.type.startsWith("CW")
+                              p.type === "GW"
                             ).length
                           }
                         </div>
-                        <div className="text-xs text-blue-600 font-medium">Cold Work</div>
+                        <div className="text-xs text-blue-600 font-medium">General Work</div>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-gray-600">
+                          {
+                            getFilteredPoints().filter((p) =>
+                              p.type === "BC"
+                            ).length
+                          }
+                        </div>
+                        <div className="text-xs text-gray-600 font-medium">Breaking Containment</div>
                       </div>
                     </div>
                   </div>
