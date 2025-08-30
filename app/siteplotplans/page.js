@@ -117,9 +117,9 @@ function SitePlotPlans() {
                 console.log(`⏳ Permit ${permit.id} set to PENDING (approved but not started)`);
               }
             } else if (permit.status === 'AA_APPROVED') {
-              // AA approved permits are shown but marked as waiting for CC approval
+              // AA approved permits are shown but marked as waiting for SC approval
               dynamicStatus = 'pending';
-              console.log(`⏳ Permit ${permit.id} - AA approved, waiting for CC approval`);
+              console.log(`⏳ Permit ${permit.id} - AA approved, waiting for SC approval`);
             }
 
             const result = {

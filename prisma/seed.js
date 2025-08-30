@@ -41,15 +41,15 @@ async function main() {
     },
   })
 
-  // Create CC user
-  const cc = await prisma.user.upsert({
-    where: { email: 'cc@sika.com' },
+  // Create SC user
+  const sc = await prisma.user.upsert({
+    where: { email: 'sc@sika.com' },
     update: {},
     create: {
-      name: 'Company Controller',
-      email: 'cc@sika.com',
-      password: 'cc123', // In production, hash this password
-      role: 'CC',
+      name: 'Site Controller',
+      email: 'sc@sika.com',
+      password: 'sc123', // In production, hash this password
+      role: 'SC',
     },
   })
 
@@ -110,9 +110,9 @@ async function main() {
       aaApprovedBy: aa.id,
       aaApprovedAt: new Date(),
       aaComments: 'Approved by Area Authority',
-      ccApprovedBy: cc.id,
-      ccApprovedAt: new Date(),
-      ccComments: 'Approved by Company Controller',
+      scApprovedBy: sc.id,
+      scApprovedAt: new Date(),
+      scComments: 'Approved by Site Controller',
       userId: ptwc.id,
     },
   })
@@ -248,7 +248,7 @@ async function main() {
     },
   })
 
-  console.log({ admin, ptwc, aa, cc, user, goal1, goal2, permit1, permit2, permit3, permit4, rejectedPermit, orgHead, orgManager })
+  console.log({ admin, ptwc, aa, sc, user, goal1, goal2, permit1, permit2, permit3, permit4, rejectedPermit, orgHead, orgManager })
   console.log('Seeding finished.')
 }
 

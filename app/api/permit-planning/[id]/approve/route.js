@@ -27,7 +27,7 @@ export async function POST(request, { params }) {
       }, { status: 404 });
     }
 
-    if (!['AA', 'CC'].includes(role) || user.role !== role) {
+    if (!['AA', 'SC'].includes(role) || user.role !== role) {
       return Response.json({
         success: false,
         message: 'Invalid role or user does not have permission to approve'
@@ -40,7 +40,7 @@ export async function POST(request, { params }) {
       include: {
         user: true,
         aaApprover: true,
-        ccApprover: true
+        scApprover: true
       }
     });
 
@@ -72,19 +72,19 @@ export async function POST(request, { params }) {
       };
       newStatus = 'AA_APPROVED';
 
-    } else if (role === 'CC') {
-      // CC approval - hanya bisa approve jika sudah disetujui AA
+    } else if (role === 'SC') {
+      // SC approval - hanya bisa approve jika sudah disetujui AA
       if (permit.status !== 'AA_APPROVED') {
         return Response.json({
           success: false,
-          message: 'Permit must be approved by AA first before CC can approve'
+          message: 'Permit must be approved by AA first before SC can approve'
         }, { status: 400 });
       }
 
       updateData = {
-        ccApprovedBy: parseInt(userId),
-        ccApprovedAt: new Date(),
-        ccComments: comments || null,
+        scApprovedBy: parseInt(userId),
+        scApprovedAt: new Date(),
+        scComments: comments || null,
         status: 'FULLY_APPROVED'
       };
       newStatus = 'FULLY_APPROVED';
@@ -109,7 +109,7 @@ export async function POST(request, { params }) {
             email: true
           }
         },
-        ccApprover: {
+        scApprover: {
           select: {
             id: true,
             name: true,
@@ -173,7 +173,7 @@ export async function PUT(request, { params }) {
       }, { status: 404 });
     }
 
-    if (!['AA', 'CC'].includes(role) || user.role !== role) {
+    if (!['AA', 'SC'].includes(role) || user.role !== role) {
       return Response.json({
         success: false,
         message: 'Invalid role or user does not have permission to reject'
@@ -193,7 +193,7 @@ export async function PUT(request, { params }) {
     }
 
     // Tentukan status rejection berdasarkan role
-    let newStatus = role === 'AA' ? 'REJECTED_BY_AA' : 'REJECTED_BY_CC';
+    let newStatus = role === 'AA' ? 'REJECTED_BY_AA' : 'REJECTED_BY_SC';
 
     // Update permit dengan rejection
     const updatedPermit = await prisma.permitPlanning.update({

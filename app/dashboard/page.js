@@ -100,7 +100,7 @@ function Dashboard({ user }) {
       'FULLY_APPROVED': { color: 'bg-secondary', text: 'Fully Approved' },
       'ACTIVE': { color: 'bg-secondary', text: 'Active' },
       'REJECTED_BY_AA': { color: 'bg-primary', text: 'Rejected by AA' },
-      'REJECTED_BY_CC': { color: 'bg-primary', text: 'Rejected by CC' },
+      'REJECTED_BY_SC': { color: 'bg-primary', text: 'Rejected by SC' },
       'COMPLETED': { color: 'bg-quaternary', text: 'Completed' },
       'CANCELLED': { color: 'bg-gray-400', text: 'Cancelled' }
     };
@@ -427,7 +427,7 @@ function Dashboard({ user }) {
                     </svg>
                     {dashboardData?.role === 'PTWC' ? 'My Permits' :
                      dashboardData?.role === 'AA' ? 'Permits Awaiting AA Approval' :
-                     dashboardData?.role === 'CC' ? 'Permits Awaiting CC Approval' :
+                     dashboardData?.role === 'SC' ? 'Permits Awaiting SC Approval' :
                      'All Permits'}
                   </h3>
                   <div className="bg-tertiary px-3 py-1 rounded-full">

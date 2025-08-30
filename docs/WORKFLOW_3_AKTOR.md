@@ -1,11 +1,11 @@
-# SIKA - Workflow 3 Aktor (PTWC, AA, CC)
+# SIKA - Workflow 3 Aktor (PTWC, AA, SC)
 
 ## Overview
 Aplikasi SIKA telah diperbarui untuk mendukung workflow 3 aktor dengan sistem approval bertingkat:
 
 1. **PTWC (Permit to Work Controller)** - Membuat dan submit permit
 2. **AA (Area Authority)** - Approve permit pertama kali
-3. **CC (Company Controller)** - Approve permit setelah AA approve
+3. **SC (Site Controller)** - Approve permit setelah AA approve
 
 ## Alur Kerja
 
@@ -23,13 +23,13 @@ Aplikasi SIKA telah diperbarui untuk mendukung workflow 3 aktor dengan sistem ap
   - Jika approve: Status berubah menjadi `AA_APPROVED`
   - Jika reject: Status berubah menjadi `REJECTED_BY_AA`
 
-### 3. CC - Final Approval
-- Login dengan role `CC`
+### 3. SC - Final Approval
+- Login dengan role `SC`
 - Melihat permit dengan status `AA_APPROVED` di dashboard
 - Review permit yang sudah disetujui AA
 - Bisa **Approve** atau **Reject** permit:
   - Jika approve: Status berubah menjadi `FULLY_APPROVED` → `ACTIVE`
-  - Jika reject: Status berubah menjadi `REJECTED_BY_CC`
+  - Jika reject: Status berubah menjadi `REJECTED_BY_SC`
 
 ### 4. Tampil di Site Plot
 - Hanya permit dengan status `ACTIVE` yang akan muncul sebagai pin di site plot
@@ -51,9 +51,9 @@ Aplikasi SIKA telah diperbarui untuk mendukung workflow 3 aktor dengan sistem ap
 - Password: `aa123`
 - Fungsi: Approve/reject permit setelah PTWC submit
 
-### CC (Company Controller)
-- Email: `cc@sika.com`
-- Password: `cc123`
+### SC (Site Controller)
+- Email: `sc@sika.com`
+- Password: `sc123`
 - Fungsi: Final approve/reject setelah AA approve
 
 ### Admin
@@ -70,11 +70,11 @@ Aplikasi SIKA telah diperbarui untuk mendukung workflow 3 aktor dengan sistem ap
 
 1. **DRAFT** - Permit baru dibuat oleh PTWC, belum disubmit
 2. **PENDING_AA_APPROVAL** - Permit sudah disubmit, menunggu approval AA
-3. **AA_APPROVED** - Permit sudah disetujui AA, menunggu approval CC
-4. **FULLY_APPROVED** - Permit sudah disetujui AA dan CC
+3. **AA_APPROVED** - Permit sudah disetujui AA, menunggu approval SC
+4. **FULLY_APPROVED** - Permit sudah disetujui AA dan SC
 5. **ACTIVE** - Permit aktif dan muncul di site plot
 6. **REJECTED_BY_AA** - Permit ditolak oleh AA
-7. **REJECTED_BY_CC** - Permit ditolak oleh CC
+7. **REJECTED_BY_SC** - Permit ditolak oleh SC
 8. **COMPLETED** - Permit selesai
 9. **CANCELLED** - Permit dibatalkan
 
@@ -86,13 +86,13 @@ POST /api/permit-planning/{id}/submit
 Body: { userId: number }
 ```
 
-### Approve/Reject Permit (AA/CC)
+### Approve/Reject Permit (AA/SC)
 ```
 POST /api/permit-planning/{id}/approve  // Approve
 PUT /api/permit-planning/{id}/approve   // Reject
 Body: { 
   userId: number, 
-  role: "AA" | "CC", 
+  role: "AA" | "SC", 
   comments?: string,
   rejectionReason?: string 
 }
@@ -109,9 +109,9 @@ GET /api/dashboard/permits?userId={id}&role={role}
 - `aa_approved_by` - ID user AA yang approve
 - `aa_approved_at` - Timestamp approval AA
 - `aa_comments` - Komentar dari AA
-- `cc_approved_by` - ID user CC yang approve  
-- `cc_approved_at` - Timestamp approval CC
-- `cc_comments` - Komentar dari CC
+- `sc_approved_by` - ID user SC yang approve  
+- `sc_approved_at` - Timestamp approval SC
+- `sc_comments` - Komentar dari SC
 - `rejected_by` - ID user yang reject
 - `rejected_at` - Timestamp rejection
 - `rejection_reason` - Alasan rejection
@@ -119,7 +119,7 @@ GET /api/dashboard/permits?userId={id}&role={role}
 ### New Roles:
 - `PTWC` - Permit to Work Controller
 - `AA` - Area Authority  
-- `CC` - Company Controller
+- `SC` - Site Controller
 
 ## Testing Scenario
 

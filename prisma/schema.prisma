@@ -29,7 +29,7 @@ model User {
   organizationStructures OrganizationStructure[]
   permitPlannings        PermitPlanning[]
   aaApprovals            PermitPlanning[] @relation("AAApprovals")
-  ccApprovals            PermitPlanning[] @relation("CCApprovals")
+  scApprovals            PermitPlanning[] @relation("SCApprovals")
   rejections             PermitPlanning[] @relation("Rejections")
 
   @@map("users")
@@ -94,9 +94,9 @@ model PermitPlanning {
   aaApprovedAt     DateTime? @map("aa_approved_at")
   aaComments       String?   @map("aa_comments") @db.Text
   
-  ccApprovedBy     Int?      @map("cc_approved_by")
-  ccApprovedAt     DateTime? @map("cc_approved_at")
-  ccComments       String?   @map("cc_comments") @db.Text
+  scApprovedBy     Int?      @map("sc_approved_by")
+  scApprovedAt     DateTime? @map("sc_approved_at")
+  scComments       String?   @map("sc_comments") @db.Text
   
   rejectedBy       Int?      @map("rejected_by")
   rejectedAt       DateTime? @map("rejected_at")
@@ -113,7 +113,7 @@ model PermitPlanning {
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   aaApprover User? @relation("AAApprovals", fields: [aaApprovedBy], references: [id])
-  ccApprover User? @relation("CCApprovals", fields: [ccApprovedBy], references: [id])
+  scApprover User? @relation("SCApprovals", fields: [scApprovedBy], references: [id])
   rejector   User? @relation("Rejections", fields: [rejectedBy], references: [id])
 
   @@map("permit_planning")
@@ -144,7 +144,7 @@ enum Role {
   USER
   PTWC     // Permit to Work Controller - membuat permit
   AA       // Area Authority - approve permit
-  CC       // Company Controller - approve permit
+  SC       // Site Controller - approve permit
 
   @@map("role")
 }
@@ -192,11 +192,11 @@ enum PermitStatus {
   DRAFT
   SUBMITTED           // Submit oleh PTWC
   PENDING_AA_APPROVAL // Menunggu approval dari AA
-  PENDING_CC_APPROVAL // Menunggu approval dari CC (setelah AA approve)
-  AA_APPROVED         // Disetujui oleh AA, menunggu CC
-  FULLY_APPROVED      // Disetujui oleh AA dan CC
+  PENDING_SC_APPROVAL // Menunggu approval dari SC (setelah AA approve)
+  AA_APPROVED         // Disetujui oleh AA, menunggu SC
+  FULLY_APPROVED      // Disetujui oleh AA dan SC
   REJECTED_BY_AA      // Ditolak oleh AA
-  REJECTED_BY_CC      // Ditolak oleh CC
+  REJECTED_BY_SC      // Ditolak oleh SC
   ACTIVE              // Permit aktif (tampil di site plot)
   COMPLETED
   CANCELLED

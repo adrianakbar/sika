@@ -155,7 +155,7 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
       'FULLY_APPROVED': { color: 'bg-green-500', text: 'Fully Approved' },
       'ACTIVE': { color: 'bg-green-600', text: 'Active' },
       'REJECTED_BY_AA': { color: 'bg-red-500', text: 'Rejected by AA' },
-      'REJECTED_BY_CC': { color: 'bg-red-600', text: 'Rejected by CC' },
+      'REJECTED_BY_SC': { color: 'bg-red-600', text: 'Rejected by SC' },
       'COMPLETED': { color: 'bg-gray-600', text: 'Completed' },
       'CANCELLED': { color: 'bg-gray-400', text: 'Cancelled' }
     };
@@ -253,15 +253,15 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
             </div>
           )}
           
-          {permit.ccApprover && (
+          {permit.scApprover && (
             <div className="flex items-center space-x-2 text-sm">
               <span className="w-2 h-2 bg-green-500 rounded-full"></span>
               <span>
-                <strong>CC Approved</strong> by {permit.ccApprover.name}
-                {permit.ccApprovedAt && ` on ${new Date(permit.ccApprovedAt).toLocaleDateString()}`}
+                <strong>SC Approved</strong> by {permit.scApprover.name}
+                {permit.scApprovedAt && ` on ${new Date(permit.scApprovedAt).toLocaleDateString()}`}
               </span>
-              {permit.ccComments && (
-                <span className="text-gray-600 italic">- {permit.ccComments}</span>
+              {permit.scComments && (
+                <span className="text-gray-600 italic">- {permit.scComments}</span>
               )}
             </div>
           )}

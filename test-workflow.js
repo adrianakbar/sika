@@ -42,12 +42,12 @@ async function testWorkflow() {
       password: 'aa123'
     });
     
-    const ccLogin = await apiRequest('/api/auth/login', 'POST', {
-      email: 'cc@sika.com',
-      password: 'cc123'
+    const scLogin = await apiRequest('/api/auth/login', 'POST', {
+      email: 'sc@sika.com',
+      password: 'sc123'
     });
     
-    if (!ptwcLogin.success || !aaLogin.success || !ccLogin.success) {
+    if (!ptwcLogin.success || !aaLogin.success || !scLogin.success) {
       console.error('❌ Login tests failed');
       return;
     }
@@ -59,7 +59,7 @@ async function testWorkflow() {
     
     await apiRequest(`/api/dashboard/permits?userId=2&role=PTWC`);
     await apiRequest(`/api/dashboard/permits?userId=3&role=AA`);
-    await apiRequest(`/api/dashboard/permits?userId=4&role=CC`);
+    await apiRequest(`/api/dashboard/permits?userId=4&role=SC`);
     
     console.log('✅ Dashboard tests completed\n');
     
@@ -85,17 +85,17 @@ async function testWorkflow() {
     
     console.log('✅ AA approval test completed\n');
     
-    // 5. Test CC approval
-    console.log('5. Testing CC Approval');
+    // 5. Test SC approval
+    console.log('5. Testing SC Approval');
     
-    // Final approve oleh CC
+    // Final approve oleh SC
     await apiRequest('/api/permit-planning/4/approve', 'POST', {
-      userId: 4, // CC user ID  
-      role: 'CC',
-      comments: 'Final approval by CC'
+      userId: 4, // SC user ID  
+      role: 'SC',
+      comments: 'Final approval by SC'
     });
     
-    console.log('✅ CC approval test completed\n');
+    console.log('✅ SC approval test completed\n');
     
     // 6. Test site plot visualization (hanya ACTIVE permits)
     console.log('6. Testing Site Plot Visualization');

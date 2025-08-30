@@ -27,9 +27,9 @@ export async function GET(request) {
         dashboardData = await getAADashboard();
         break;
       
-      case 'CC':
-        // CC melihat permits yang sudah disetujui AA dan menunggu approval mereka
-        dashboardData = await getCCDashboard();
+      case 'SC':
+        // SC melihat permits yang sudah disetujui AA dan menunggu approval mereka
+        dashboardData = await getSCDashboard();
         break;
       
       case 'ADMIN':
@@ -68,7 +68,7 @@ async function getPTWCDashboard(userId) {
       aaApprover: {
         select: { id: true, name: true, email: true }
       },
-      ccApprover: {
+      scApprover: {
         select: { id: true, name: true, email: true }
       },
       rejector: {
@@ -123,8 +123,8 @@ async function getAADashboard() {
   };
 }
 
-// Dashboard untuk CC
-async function getCCDashboard() {
+// Dashboard untuk SC
+async function getSCDashboard() {
   const permits = await prisma.permitPlanning.findMany({
     where: {
       status: 'AA_APPROVED'
@@ -148,8 +148,8 @@ async function getCCDashboard() {
   return {
     permits,
     stats,
-    role: 'CC',
-    title: 'CC Dashboard - Permits Awaiting My Approval'
+    role: 'SC',
+    title: 'SC Dashboard - Permits Awaiting My Approval'
   };
 }
 
@@ -163,7 +163,7 @@ async function getAdminDashboard() {
       aaApprover: {
         select: { id: true, name: true, email: true }
       },
-      ccApprover: {
+      scApprover: {
         select: { id: true, name: true, email: true }
       },
       rejector: {

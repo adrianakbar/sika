@@ -30,7 +30,7 @@ export async function GET(request) {
             email: true
           }
         },
-        ccApprover: {
+        scApprover: {
           select: {
             id: true,
             name: true,

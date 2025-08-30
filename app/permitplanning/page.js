@@ -132,7 +132,7 @@ function PermitPlanning() {
       FULLY_APPROVED: 'bg-secondary text-white',
       ACTIVE: 'bg-secondary text-white',
       REJECTED_BY_AA: 'bg-primary text-white',
-      REJECTED_BY_CC: 'bg-primary text-white',
+      REJECTED_BY_SC: 'bg-primary text-white',
       COMPLETED: 'bg-quaternary text-white',
       CANCELLED: 'bg-gray-400 text-white',
       EXPIRED: 'bg-gray-400 text-white',
@@ -149,7 +149,7 @@ function PermitPlanning() {
       FULLY_APPROVED: 'Fully Approved',
       ACTIVE: 'Active',
       REJECTED_BY_AA: 'Rejected by AA',
-      REJECTED_BY_CC: 'Rejected by CC',
+      REJECTED_BY_SC: 'Rejected by SC',
       COMPLETED: 'Completed',
       CANCELLED: 'Cancelled',
       EXPIRED: 'Expired',
@@ -187,7 +187,7 @@ function PermitPlanning() {
       if (filterStatus === 'APPROVED_ALL') {
         return ['AA_APPROVED', 'FULLY_APPROVED'].includes(permit.status);
       } else if (filterStatus === 'REJECTED_ALL') {
-        return ['REJECTED_BY_AA', 'REJECTED_BY_CC'].includes(permit.status);
+        return ['REJECTED_BY_AA', 'REJECTED_BY_SC'].includes(permit.status);
       } else {
         return permit.status === filterStatus;
       }
@@ -255,7 +255,7 @@ function PermitPlanning() {
               <option value="APPROVED_ALL">All Approved (AA + Fully)</option>
               <option value="ACTIVE">Active</option>
               <option value="REJECTED_BY_AA">Rejected by AA</option>
-              <option value="REJECTED_BY_CC">Rejected by CC</option>
+              <option value="REJECTED_BY_SC">Rejected by SC</option>
               <option value="REJECTED_ALL">All Rejected</option>
               <option value="COMPLETED">Completed</option>
               <option value="CANCELLED">Cancelled</option>
