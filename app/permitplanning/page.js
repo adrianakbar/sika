@@ -281,10 +281,10 @@ function PermitPlanning() {
                           <div className="text-sm text-gray-500 flex items-center gap-2">
                             {(() => {
                               const workTypeInfo = {
-                                'COLD_WORK': { label: 'Cold Work', color: 'bg-blue-500' },
-                                'COLD_WORK_BREAKING': { label: 'Cold Work - breaking containment', color: 'bg-black' },
-                                'HOT_WORK_SPARK': { label: 'Hot work - spark potential', color: 'bg-yellow-500' },
-                                'HOT_WORK_FLAME': { label: 'Hot work - naked flame', color: 'bg-red-500' }
+                                'COLD_WORK': { label: 'General Work', color: 'bg-blue-500' },
+                                'COLD_WORK_BREAKING': { label: 'Breaking Containment', color: 'bg-black' },
+                                'HOT_WORK_SPARK': { label: 'Critical Work', color: 'bg-yellow-500' },
+                                'HOT_WORK_FLAME': { label: 'Hot Work', color: 'bg-red-500' }
                               };
                               const info = workTypeInfo[permit.workType] || { label: permit.workType, color: 'bg-gray-500' };
                               return (
@@ -391,10 +391,10 @@ function PermitPlanning() {
                     <div className="mt-1 flex items-center gap-2">
                       {(() => {
                         const workTypeInfo = {
-                          'COLD_WORK': { label: 'Cold Work', color: 'bg-blue-500' },
-                          'COLD_WORK_BREAKING': { label: 'Cold Work - breaking containment', color: 'bg-black' },
-                          'HOT_WORK_SPARK': { label: 'Hot work - spark potential', color: 'bg-yellow-500' },
-                          'HOT_WORK_FLAME': { label: 'Hot work - naked flame', color: 'bg-red-500' }
+                          'COLD_WORK': { label: 'General Work', color: 'bg-blue-500' },
+                          'COLD_WORK_BREAKING': { label: 'Breaking Containment', color: 'bg-black' },
+                          'HOT_WORK_SPARK': { label: 'Critical Work', color: 'bg-yellow-500' },
+                          'HOT_WORK_FLAME': { label: 'Hot Work', color: 'bg-red-500' }
                         };
                         const info = workTypeInfo[selectedPermit.workType] || { label: selectedPermit.workType, color: 'bg-gray-500' };
                         return (
@@ -451,14 +451,20 @@ function PermitPlanning() {
                           return Object.entries(docs).map(([key, doc]) => {
                             if (doc.checked) {
                               const labels = {
-                                l2ra: 'L2RA',
-                                confineSpace: 'Confine Space Entry Certificate',
+                                // New document types
+                                jsa: 'Job Safety Analysis (JSA)',
+                                ra: 'Risk Assessment (RA)',
+                                csep: 'Confined Space Entry Permit (CSEP)',
+                                icc: 'Isolation Confirmation Certificate (ICC)',
                                 tkiTko: 'TKI / TKO',
-                                other: 'Other'
+                                other: 'Other',
+                                // Legacy document types (for backward compatibility)
+                                l2ra: 'Risk Assessment (RA)',
+                                confineSpace: 'Confined Space Entry Permit (CSEP)'
                               };
                               return (
                                 <div key={key} className="text-sm">
-                                  • {labels[key]}: {doc.number}
+                                  • {labels[key] || key}: {doc.number}
                                 </div>
                               );
                             }

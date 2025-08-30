@@ -27,8 +27,10 @@ export default function PermitPlanningForm({
     emergencyProcedure: "",
     status: "DRAFT",
     relatedDocuments: {
-      l2ra: { checked: false, number: "" },
-      confineSpace: { checked: false, number: "" },
+      jsa: { checked: false, number: "" },
+      ra: { checked: false, number: "" },
+      csep: { checked: false, number: "" },
+      icc: { checked: false, number: "" },
       tkiTko: { checked: false, number: "" },
       other: { checked: false, number: "" },
     },
@@ -50,18 +52,18 @@ export default function PermitPlanningForm({
   ];
 
   const workTypes = [
-    { value: "COLD_WORK", label: "Cold Work", color: "blue" },
+    { value: "COLD_WORK", label: "General Work", color: "blue" },
     {
       value: "COLD_WORK_BREAKING",
-      label: "Cold Work - breaking containment",
+      label: "Breaking Containment",
       color: "black",
     },
     {
       value: "HOT_WORK_SPARK",
-      label: "Hot work - spark potential",
+      label: "Critical Work",
       color: "yellow",
     },
-    { value: "HOT_WORK_FLAME", label: "Hot work - naked flame", color: "red" },
+    { value: "HOT_WORK_FLAME", label: "Hot Work", color: "red" },
   ];
 
   const riskLevels = ["LOW", "MEDIUM", "HIGH"];
@@ -108,19 +110,37 @@ export default function PermitPlanningForm({
 
       // Parse relatedDocuments if it's a string (from database)
       let parsedRelatedDocuments = {
-        l2ra: { checked: false, number: "" },
-        confineSpace: { checked: false, number: "" },
+        jsa: { checked: false, number: "" },
+        ra: { checked: false, number: "" },
+        csep: { checked: false, number: "" },
+        icc: { checked: false, number: "" },
         tkiTko: { checked: false, number: "" },
         other: { checked: false, number: "" },
       };
 
       if (editData.relatedDocuments) {
         try {
+          let rawData;
           if (typeof editData.relatedDocuments === "string") {
-            parsedRelatedDocuments = JSON.parse(editData.relatedDocuments);
+            rawData = JSON.parse(editData.relatedDocuments);
           } else {
-            parsedRelatedDocuments = editData.relatedDocuments;
+            rawData = editData.relatedDocuments;
           }
+          
+          // Handle backward compatibility - map old field names to new ones
+          const fieldMapping = {
+            'l2ra': 'ra', // L2RA becomes Risk Assessment (RA)
+            'confineSpace': 'csep' // confineSpace becomes CSEP
+          };
+          
+          // Map old data to new structure
+          Object.keys(rawData).forEach(key => {
+            const newKey = fieldMapping[key] || key;
+            if (parsedRelatedDocuments[newKey] !== undefined) {
+              parsedRelatedDocuments[newKey] = rawData[key];
+            }
+          });
+          
           console.log("Parsed relatedDocuments:", parsedRelatedDocuments);
         } catch (error) {
           console.error("Error parsing relatedDocuments:", error);
@@ -499,16 +519,16 @@ export default function PermitPlanningForm({
           </h3>
 
           <div className="space-y-4">
-            {/* L2RA */}
+            {/* Job Safety Analysis (JSA) */}
             <div className="flex items-start gap-3">
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="l2ra"
-                  checked={formData.relatedDocuments.l2ra.checked}
+                  id="jsa"
+                  checked={formData.relatedDocuments.jsa.checked}
                   onChange={(e) =>
                     handleRelatedDocumentChange(
-                      "l2ra",
+                      "jsa",
                       "checked",
                       e.target.checked
                     )
@@ -518,29 +538,29 @@ export default function PermitPlanningForm({
               </div>
               <div className="flex-1">
                 <label
-                  htmlFor="l2ra"
+                  htmlFor="jsa"
                   className="block text-sm font-medium text-quaternary mb-1 cursor-pointer"
                 >
-                  L2RA
+                  Job Safety Analysis (JSA)
                 </label>
-                {formData.relatedDocuments.l2ra.checked && (
+                {formData.relatedDocuments.jsa.checked && (
                   <div>
                     <input
                       type="text"
-                      placeholder="Enter L2RA document number/title"
-                      value={formData.relatedDocuments.l2ra.number}
+                      placeholder="Enter JSA document number/title"
+                      value={formData.relatedDocuments.jsa.number}
                       onChange={(e) =>
                         handleRelatedDocumentChange(
-                          "l2ra",
+                          "jsa",
                           "number",
                           e.target.value
                         )
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     />
-                    {errors["relatedDocuments.l2ra"] && (
+                    {errors["relatedDocuments.jsa"] && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors["relatedDocuments.l2ra"]}
+                        {errors["relatedDocuments.jsa"]}
                       </p>
                     )}
                   </div>
@@ -548,16 +568,16 @@ export default function PermitPlanningForm({
               </div>
             </div>
 
-            {/* Confine Space Entry Certificate */}
+            {/* Risk Assessment (RA) */}
             <div className="flex items-start gap-3">
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="confineSpace"
-                  checked={formData.relatedDocuments.confineSpace.checked}
+                  id="ra"
+                  checked={formData.relatedDocuments.ra.checked}
                   onChange={(e) =>
                     handleRelatedDocumentChange(
-                      "confineSpace",
+                      "ra",
                       "checked",
                       e.target.checked
                     )
@@ -567,29 +587,127 @@ export default function PermitPlanningForm({
               </div>
               <div className="flex-1">
                 <label
-                  htmlFor="confineSpace"
+                  htmlFor="ra"
                   className="block text-sm font-medium text-quaternary mb-1 cursor-pointer"
                 >
-                  Confine Space Entry Certificate
+                  Risk Assessment (RA)
                 </label>
-                {formData.relatedDocuments.confineSpace.checked && (
+                {formData.relatedDocuments.ra.checked && (
                   <div>
                     <input
                       type="text"
-                      placeholder="Enter certificate number/title"
-                      value={formData.relatedDocuments.confineSpace.number}
+                      placeholder="Enter RA document number/title"
+                      value={formData.relatedDocuments.ra.number}
                       onChange={(e) =>
                         handleRelatedDocumentChange(
-                          "confineSpace",
+                          "ra",
                           "number",
                           e.target.value
                         )
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                     />
-                    {errors["relatedDocuments.confineSpace"] && (
+                    {errors["relatedDocuments.ra"] && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors["relatedDocuments.confineSpace"]}
+                        {errors["relatedDocuments.ra"]}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Confined Space Entry Permit (CSEP) */}
+            <div className="flex items-start gap-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="csep"
+                  checked={formData.relatedDocuments.csep.checked}
+                  onChange={(e) =>
+                    handleRelatedDocumentChange(
+                      "csep",
+                      "checked",
+                      e.target.checked
+                    )
+                  }
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+              </div>
+              <div className="flex-1">
+                <label
+                  htmlFor="csep"
+                  className="block text-sm font-medium text-quaternary mb-1 cursor-pointer"
+                >
+                  Confined Space Entry Permit (CSEP)
+                </label>
+                {formData.relatedDocuments.csep.checked && (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Enter CSEP document number/title"
+                      value={formData.relatedDocuments.csep.number}
+                      onChange={(e) =>
+                        handleRelatedDocumentChange(
+                          "csep",
+                          "number",
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                    />
+                    {errors["relatedDocuments.csep"] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors["relatedDocuments.csep"]}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Isolation Confirmation Certificate (ICC) */}
+            <div className="flex items-start gap-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="icc"
+                  checked={formData.relatedDocuments.icc.checked}
+                  onChange={(e) =>
+                    handleRelatedDocumentChange(
+                      "icc",
+                      "checked",
+                      e.target.checked
+                    )
+                  }
+                  className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+              </div>
+              <div className="flex-1">
+                <label
+                  htmlFor="icc"
+                  className="block text-sm font-medium text-quaternary mb-1 cursor-pointer"
+                >
+                  Isolation Confirmation Certificate (ICC)
+                </label>
+                {formData.relatedDocuments.icc.checked && (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Enter ICC document number/title"
+                      value={formData.relatedDocuments.icc.number}
+                      onChange={(e) =>
+                        handleRelatedDocumentChange(
+                          "icc",
+                          "number",
+                          e.target.value
+                        )
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                    />
+                    {errors["relatedDocuments.icc"] && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors["relatedDocuments.icc"]}
                       </p>
                     )}
                   </div>
