@@ -27,33 +27,71 @@ function SitePlotPlans() {
       const permitResult = await permitResponse.json();
 
       if (permitResult.success) {
-        // Convert permit data to plot points format
-        const convertedPermits = permitResult.data.map((permit) => {
-          const coords = parseCoordinates(permit.coordinates, permit.zone);
+        // Convert permit data to plot points format and filter out old permits
+        const convertedPermits = permitResult.data
+          .map((permit) => {
+            const coords = parseCoordinates(permit.coordinates, permit.zone);
+            
+            // Check if permit is currently running based on dates
+            const currentDate = new Date();
+            const startDate = new Date(permit.startDate);
+            const endDate = new Date(permit.endDate);
+            
+            // Set time to beginning of day for proper date comparison
+            currentDate.setHours(0, 0, 0, 0);
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            
+            // Calculate days since end date
+            const daysSinceEnd = Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24));
+            
+            // Hide permit if it's more than 1 day past end date
+            if (daysSinceEnd > 1) {
+              return null; // Will be filtered out
+            }
+            
+            let dynamicStatus = permit.status.toLowerCase();
+            
+            // Determine status based on date range regardless of original status
+            // (except for cancelled permits)
+            if (currentDate >= startDate && currentDate <= endDate && permit.status !== 'CANCELLED') {
+              dynamicStatus = 'running';
+            } else if (currentDate > endDate) {
+              // If current date is past end date, mark as completed
+              dynamicStatus = 'completed';
+            } else if (currentDate < startDate) {
+              // If current date is before start date, mark as pending
+              dynamicStatus = 'pending';
+            }
 
-          return {
-            id: permit.id,
-            x: coords.x,
-            y: coords.y,
-            type: getPermitTypeCode(permit.workType),
-            status: permit.status.toLowerCase(),
-            permitNumber: permit.permitNumber,
-            location: permit.workLocation,
-            description: permit.workDescription,
-            startTime: new Date(permit.startDate).toLocaleTimeString("id-ID", {
-              hour: "2-digit",
-              minute: "2-digit",
+            return {
+              id: permit.id,
+              x: coords.x,
+              y: coords.y,
+              type: getPermitTypeCode(permit.workType),
+              status: dynamicStatus,
+              permitNumber: permit.permitNumber,
+              location: permit.workLocation,
+              description: permit.workDescription,
+              startDate: permit.startDate,
+              endDate: permit.endDate,
+              startTime: new Date(permit.startDate).toLocaleDateString("id-ID", {
+                day: "2-digit",
+              month: "2-digit", 
+              year: "numeric"
             }),
-            endTime: new Date(permit.endDate).toLocaleTimeString("id-ID", {
-              hour: "2-digit",
-              minute: "2-digit",
+            endTime: new Date(permit.endDate).toLocaleDateString("id-ID", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric"
             }),
             performingAuthority: permit.performingAuthority || "N/A",
             zone: permit.zone,
             company: permit.company,
             riskLevel: permit.riskLevel,
           };
-        });
+        })
+        .filter(permit => permit !== null); // Remove permits that are more than 1 day past end date
 
         setPlotPoints(convertedPermits);
       }
@@ -210,9 +248,7 @@ function SitePlotPlans() {
   };
 
   const getPointColor = (type, status) => {
-    if (status === "completed") return "#6B7280"; // gray
-    if (status === "pending") return "#F59E0B"; // amber
-
+    // Color based on work type only, not status
     switch (type) {
       case "HW-NF":
         return "#EF4444"; // red
@@ -223,7 +259,7 @@ function SitePlotPlans() {
       case "CW-BC":
         return "#1F2937"; // black
       default:
-        return "#6B7280";
+        return "#6B7280"; // gray
     }
   };
 
@@ -459,6 +495,8 @@ function SitePlotPlans() {
                     className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
                       selectedPoint.status === "active"
                         ? "bg-green-100 text-green-800"
+                        : selectedPoint.status === "running"
+                        ? "bg-green-100 text-green-800"
                         : selectedPoint.status === "pending"
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-gray-100 text-gray-800"
@@ -466,6 +504,8 @@ function SitePlotPlans() {
                   >
                     {selectedPoint.status === "active"
                       ? "Aktif"
+                      : selectedPoint.status === "running"
+                      ? "On Progress"
                       : selectedPoint.status === "pending"
                       ? "Menunggu"
                       : "Selesai"}
@@ -529,7 +569,7 @@ function SitePlotPlans() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Waktu Mulai
+                    Tanggal Mulai
                   </label>
                   <div className="font-medium mt-1">
                     {selectedPoint.startTime}
@@ -537,7 +577,7 @@ function SitePlotPlans() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
-                    Waktu Selesai
+                    Tanggal Selesai
                   </label>
                   <div className="font-medium mt-1">
                     {selectedPoint.endTime}
@@ -656,6 +696,16 @@ function SitePlotPlans() {
                         {
                           getFilteredPoints().filter(
                             (p) => p.status === "active"
+                          ).length
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-sm text-gray-600">On Progress</span>
+                      <span className="font-semibold text-green-600">
+                        {
+                          getFilteredPoints().filter(
+                            (p) => p.status === "running"
                           ).length
                         }
                       </span>
