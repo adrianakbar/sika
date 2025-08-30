@@ -20,6 +20,28 @@ export async function GET(request) {
           select: {
             id: true,
             name: true,
+            email: true,
+            role: true
+          }
+        },
+        aaApprover: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        ccApprover: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        rejector: {
+          select: {
+            id: true,
+            name: true,
             email: true
           }
         }
@@ -73,7 +95,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Validasi user exists
+    // Validasi user exists dan role
     const user = await prisma.user.findUnique({
       where: { id: parseInt(userId) }
     });
@@ -83,6 +105,14 @@ export async function POST(request) {
         success: false,
         message: 'User not found'
       }, { status: 404 });
+    }
+
+    // Hanya PTWC yang bisa membuat permit
+    if (user.role !== 'PTWC' && user.role !== 'ADMIN') {
+      return Response.json({
+        success: false,
+        message: 'Only PTWC (Permit to Work Controller) can create permits'
+      }, { status: 403 });
     }
 
     // Use permit number from request body instead of generating automatically

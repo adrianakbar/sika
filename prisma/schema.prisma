@@ -28,6 +28,9 @@ model User {
   goals                   Goal[]
   organizationStructures OrganizationStructure[]
   permitPlannings        PermitPlanning[]
+  aaApprovals            PermitPlanning[] @relation("AAApprovals")
+  ccApprovals            PermitPlanning[] @relation("CCApprovals")
+  rejections             PermitPlanning[] @relation("Rejections")
 
   @@map("users")
 }
@@ -85,6 +88,21 @@ model PermitPlanning {
   
   // Status
   status           PermitStatus @default(DRAFT)
+  
+  // Approval tracking
+  aaApprovedBy     Int?      @map("aa_approved_by")
+  aaApprovedAt     DateTime? @map("aa_approved_at")
+  aaComments       String?   @map("aa_comments") @db.Text
+  
+  ccApprovedBy     Int?      @map("cc_approved_by")
+  ccApprovedAt     DateTime? @map("cc_approved_at")
+  ccComments       String?   @map("cc_comments") @db.Text
+  
+  rejectedBy       Int?      @map("rejected_by")
+  rejectedAt       DateTime? @map("rejected_at")
+  rejectionReason  String?   @map("rejection_reason") @db.Text
+  
+  // Legacy approval fields (for backward compatibility)
   approvedBy       String?  @map("approved_by") @db.VarChar(255)
   approvedAt       DateTime? @map("approved_at")
   
@@ -94,6 +112,9 @@ model PermitPlanning {
 
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aaApprover User? @relation("AAApprovals", fields: [aaApprovedBy], references: [id])
+  ccApprover User? @relation("CCApprovals", fields: [ccApprovedBy], references: [id])
+  rejector   User? @relation("Rejections", fields: [rejectedBy], references: [id])
 
   @@map("permit_planning")
 }
@@ -121,6 +142,9 @@ model OrganizationStructure {
 enum Role {
   ADMIN
   USER
+  PTWC     // Permit to Work Controller - membuat permit
+  AA       // Area Authority - approve permit
+  CC       // Company Controller - approve permit
 
   @@map("role")
 }
@@ -166,11 +190,14 @@ enum RiskLevel {
 
 enum PermitStatus {
   DRAFT
-  SUBMITTED
-  UNDER_REVIEW
-  APPROVED
-  REJECTED
-  ACTIVE
+  SUBMITTED           // Submit oleh PTWC
+  PENDING_AA_APPROVAL // Menunggu approval dari AA
+  PENDING_CC_APPROVAL // Menunggu approval dari CC (setelah AA approve)
+  AA_APPROVED         // Disetujui oleh AA, menunggu CC
+  FULLY_APPROVED      // Disetujui oleh AA dan CC
+  REJECTED_BY_AA      // Ditolak oleh AA
+  REJECTED_BY_CC      // Ditolak oleh CC
+  ACTIVE              // Permit aktif (tampil di site plot)
   COMPLETED
   CANCELLED
   

@@ -7,15 +7,30 @@ export async function GET(request) {
     const status = searchParams.get('status');
     const userId = searchParams.get('userId');
     
-    // Get only permit planning data for visualization
+    // Get only ACTIVE permit planning data for visualization (approved by both AA and CC)
     const permitPlannings = await prisma.permitPlanning.findMany({
       where: {
+        status: 'ACTIVE', // Hanya tampilkan permit yang sudah fully approved
         ...(zone && { zone }),
-        ...(status && { status }),
         ...(userId && { userId: parseInt(userId) })
       },
       include: {
         user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true
+          }
+        },
+        aaApprover: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        ccApprover: {
           select: {
             id: true,
             name: true,

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Input from "./Input";
 import Button from "./Button";
 import SitePlotVisualization from "./SitePlotVisualization";
+import NotificationToast from "./NotificationToast";
 
 export default function PermitPlanningForm({
   onSubmitSuccess,
@@ -13,6 +14,7 @@ export default function PermitPlanningForm({
     permitNumber: "",
     workType: "",
     workDescription: "",
+    workLocation: "", // Add workLocation field
     riskLevel: "LOW",
     zone: "",
     coordinates: "",
@@ -23,8 +25,8 @@ export default function PermitPlanningForm({
     areaAuthority: "",
     siteControllerName: "",
     safetyMeasures: "",
-    equipmentNeeded: "",
-    emergencyProcedure: "",
+    ppeRequired: "", // Change from equipmentNeeded to ppeRequired
+    emergencyContact: "", // Change from emergencyProcedure to emergencyContact
     status: "DRAFT",
     relatedDocuments: {
       jsa: { checked: false, number: "" },
@@ -38,6 +40,8 @@ export default function PermitPlanningForm({
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submittingForApproval, setSubmittingForApproval] = useState(false);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
 
   // Zone definitions
   const zones = [
@@ -153,6 +157,7 @@ export default function PermitPlanningForm({
         permitNumber: editData.permitNumber || "",
         workType: editData.workType || "",
         workDescription: editData.workDescription || "",
+        workLocation: editData.workLocation || "",
         riskLevel: editData.riskLevel || "LOW",
         zone: editData.zone || "",
         startDate: editData.startDate ? editData.startDate.split("T")[0] : "",
@@ -163,8 +168,8 @@ export default function PermitPlanningForm({
         areaAuthority: editData.areaAuthority || "",
         siteControllerName: editData.siteControllerName || "",
         safetyMeasures: editData.safetyMeasures || "",
-        equipmentNeeded: editData.equipmentNeeded || editData.ppeRequired || "",
-        emergencyProcedure: editData.emergencyProcedure || editData.emergencyContact || "",
+        ppeRequired: editData.ppeRequired || editData.equipmentNeeded || "",
+        emergencyContact: editData.emergencyContact || editData.emergencyProcedure || "",
         status: editData.status || "DRAFT",
         relatedDocuments: parsedRelatedDocuments,
       });
@@ -377,6 +382,7 @@ export default function PermitPlanningForm({
             permitNumber: "",
             workType: "",
             workDescription: "",
+            workLocation: "",
             riskLevel: "LOW",
             zone: "",
             coordinates: "",
@@ -387,12 +393,14 @@ export default function PermitPlanningForm({
             areaAuthority: "",
             siteControllerName: "",
             safetyMeasures: "",
-            equipmentNeeded: "",
-            emergencyProcedure: "",
+            ppeRequired: "",
+            emergencyContact: "",
             status: "DRAFT",
             relatedDocuments: {
-              l2ra: { checked: false, number: "" },
-              confineSpace: { checked: false, number: "" },
+              jsa: { checked: false, number: "" },
+              ra: { checked: false, number: "" },
+              csep: { checked: false, number: "" },
+              icc: { checked: false, number: "" },
               tkiTko: { checked: false, number: "" },
               other: { checked: false, number: "" },
             },
@@ -409,6 +417,46 @@ export default function PermitPlanningForm({
       setErrors({ submit: "Failed to save permit. Please try again." });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Submit permit for approval
+  const handleSubmitForApproval = async (permitId) => {
+    setSubmittingForApproval(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        setErrors({ submit: "User not logged in. Please login again." });
+        return;
+      }
+
+      const response = await fetch(`/api/permit-planning/${permitId}/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setNotification({
+          show: true,
+          message: "Permit submitted for AA approval successfully!",
+          type: "success"
+        });
+        if (onSubmitSuccess) {
+          onSubmitSuccess(result.data);
+        }
+      } else {
+        setErrors({ submit: result.message || "Failed to submit permit for approval" });
+      }
+    } catch (error) {
+      console.error("Error submitting permit for approval:", error);
+      setErrors({ submit: "Failed to submit permit for approval. Please try again." });
+    } finally {
+      setSubmittingForApproval(false);
     }
   };
 
@@ -430,13 +478,19 @@ export default function PermitPlanningForm({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-xl shadow-lg">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-quaternary">
-          {editData ? "Edit Work Permit" : "Create Work Permit"}
+        <h2 className="text-2xl font-bold text-quaternary flex items-center">
+          <svg className="w-7 h-7 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          {editData ? "Edit Work Permit" : "Create New Work Permit"}
         </h2>
         {onCancel && (
           <Button variant="secondary" onClick={onCancel}>
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
             Cancel
           </Button>
         )}
@@ -444,7 +498,14 @@ export default function PermitPlanningForm({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-gray-50 p-6 rounded-xl">
+          <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Basic Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-quaternary mb-1">
               Work Permit Type *
@@ -512,9 +573,24 @@ export default function PermitPlanningForm({
           />
         </div>
 
+        <div>
+          <Input
+            label="Work Location Description"
+            name="workLocation"
+            value={formData.workLocation}
+            onChange={handleChange}
+            placeholder="Detailed location description (e.g., Unit 1 Compressor Room, Near Tank 101)"
+            error={errors.workLocation}
+          />
+        </div>
+      </div>
+
         {/* Related Documents Permit */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-quaternary mb-4">
+        <div className="bg-tertiary/30 p-6 rounded-xl border border-primary/20">
+          <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
             Related Documents Permit
           </h3>
 
@@ -816,8 +892,12 @@ export default function PermitPlanningForm({
         </div>
 
         {/* Location Information */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-quaternary mb-4">
+        <div className="bg-secondary/10 p-6 rounded-xl border border-secondary/30">
+          <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
             Location Information
           </h3>
 
@@ -890,8 +970,11 @@ export default function PermitPlanningForm({
         </div>
 
         {/* Schedule Information */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-quaternary mb-4">
+        <div className="bg-quaternary/10 p-6 rounded-xl border border-quaternary/30">
+          <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
             Schedule
           </h3>
 
@@ -923,8 +1006,11 @@ export default function PermitPlanningForm({
         </div>
 
         {/* Personnel Information */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-quaternary mb-4">
+        <div className="bg-gray-50 p-6 rounded-xl">
+          <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+            </svg>
             Personnel
           </h3>
 
@@ -976,18 +1062,21 @@ export default function PermitPlanningForm({
         </div>
 
         {/* Safety Information */}
-        <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold text-quaternary mb-4">
+        <div className="bg-primary/5 p-6 rounded-xl border border-primary/20">
+          <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
             Safety Information
           </h3>
 
           <div className="space-y-4">
             <Input
-              label="Equipment Needed"
-              name="equipmentNeeded"
-              value={formData.equipmentNeeded}
+              label="PPE Required / Equipment Needed"
+              name="ppeRequired"
+              value={formData.ppeRequired}
               onChange={handleChange}
-              placeholder="List required equipment and tools"
+              placeholder="List required Personal Protective Equipment and tools"
               multiline
               rows={2}
             />
@@ -1003,11 +1092,11 @@ export default function PermitPlanningForm({
             />
 
             <Input
-              label="Emergency Procedure"
-              name="emergencyProcedure"
-              value={formData.emergencyProcedure}
+              label="Emergency Contact"
+              name="emergencyContact"
+              value={formData.emergencyContact}
               onChange={handleChange}
-              placeholder="Emergency contact and procedures"
+              placeholder="Emergency contact person and phone number"
               multiline
               rows={2}
             />
@@ -1054,22 +1143,71 @@ export default function PermitPlanningForm({
         </div>
 
         {/* Submit Buttons */}
-        <div className="flex gap-4 pt-6">
-          <Button type="submit" disabled={loading}>
-            {loading
-              ? "Saving..."
-              : editData
-              ? "Update Permit"
-              : "Create Permit"}
+        <div className="flex gap-4 pt-6 border-t border-gray-200">
+          <Button 
+            type="submit" 
+            disabled={loading || submittingForApproval}
+            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
+            {loading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Saving...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {editData ? "Update Permit" : "Create Permit"}
+              </>
+            )}
           </Button>
+
+          {/* Submit for Approval Button - Only show for DRAFT permits */}
+          {editData && editData.status === 'DRAFT' && (
+            <Button 
+              type="button" 
+              disabled={loading || submittingForApproval}
+              onClick={() => handleSubmitForApproval(editData.id)}
+              className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white"
+            >
+              {submittingForApproval ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Submit for Approval
+                </>
+              )}
+            </Button>
+          )}
 
           {onCancel && (
             <Button variant="secondary" onClick={onCancel}>
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
               Cancel
             </Button>
           )}
         </div>
       </form>
+
+      {/* Notification Toast */}
+      <NotificationToast
+        notification={notification.show ? notification : null}
+        onClose={() => setNotification({ show: false, message: "", type: "" })}
+      />
     </div>
   );
 }

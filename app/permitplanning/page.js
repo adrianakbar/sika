@@ -5,6 +5,7 @@ import SitePlotVisualization from '../components/SitePlotVisualization';
 import Button from '../components/Button';
 import NotificationToast from '../components/NotificationToast';
 import ConfirmModal from '../components/ConfirmModal';
+import LoadingSpinner from '../components/LoadingSpinner';
 import withAuth from '../components/withAuth';
 
 function PermitPlanning() {
@@ -125,16 +126,42 @@ function PermitPlanning() {
 
   const getStatusBadge = (status) => {
     const colors = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      APPROVED: 'bg-green-100 text-green-800',
-      REJECTED: 'bg-red-100 text-red-800',
-      EXPIRED: 'bg-gray-100 text-gray-800',
-      ACTIVE: 'bg-blue-100 text-blue-800'
+      DRAFT: 'bg-gray-500 text-white',
+      PENDING_AA_APPROVAL: 'bg-yellow-500 text-white',
+      AA_APPROVED: 'bg-quaternary text-white',
+      FULLY_APPROVED: 'bg-secondary text-white',
+      ACTIVE: 'bg-secondary text-white',
+      REJECTED_BY_AA: 'bg-primary text-white',
+      REJECTED_BY_CC: 'bg-primary text-white',
+      COMPLETED: 'bg-quaternary text-white',
+      CANCELLED: 'bg-gray-400 text-white',
+      EXPIRED: 'bg-gray-400 text-white',
+      // Legacy status values for backward compatibility
+      PENDING: 'bg-yellow-500 text-white',
+      APPROVED: 'bg-secondary text-white',
+      REJECTED: 'bg-primary text-white'
+    };
+    
+    const statusLabels = {
+      DRAFT: 'Draft',
+      PENDING_AA_APPROVAL: 'Pending AA',
+      AA_APPROVED: 'AA Approved',
+      FULLY_APPROVED: 'Fully Approved',
+      ACTIVE: 'Active',
+      REJECTED_BY_AA: 'Rejected by AA',
+      REJECTED_BY_CC: 'Rejected by CC',
+      COMPLETED: 'Completed',
+      CANCELLED: 'Cancelled',
+      EXPIRED: 'Expired',
+      // Legacy status values
+      PENDING: 'Pending',
+      APPROVED: 'Approved',
+      REJECTED: 'Rejected'
     };
     
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[status] || 'bg-gray-100 text-gray-800'}`}>
-        {status}
+      <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full shadow-sm ${colors[status] || 'bg-gray-500 text-white'}`}>
+        {statusLabels[status] || status}
       </span>
     );
   };
@@ -155,35 +182,52 @@ function PermitPlanning() {
 
   const filteredPermits = permits.filter(permit => {
     if (filterZone && permit.zone !== filterZone) return false;
-    if (filterStatus && permit.status !== filterStatus) return false;
+    if (filterStatus) {
+      // Handle grouped status filtering for better UX
+      if (filterStatus === 'APPROVED_ALL') {
+        return ['AA_APPROVED', 'FULLY_APPROVED'].includes(permit.status);
+      } else if (filterStatus === 'REJECTED_ALL') {
+        return ['REJECTED_BY_AA', 'REJECTED_BY_CC'].includes(permit.status);
+      } else {
+        return permit.status === filterStatus;
+      }
+    }
     return true;
   });
 
 
   return (
-    <div className="bg-gray-50 p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-quaternary">Work Permit Planning</h1>
-          <p className="text-foreground mt-1">Manage work permits and visualize locations on site plot</p>
-        </div>
-        <Button onClick={handleCreatePermit}>
+      <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-quaternary">Work Permit Planning</h1>
+            <p className="text-gray-600 mt-2">Manage work permits and visualize locations on site plot</p>
+          </div>
+          <Button 
+            onClick={handleCreatePermit}
+            className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
             Create New Permit
           </Button>
         </div>
+      </div>
 
       
 
         {/* Filters */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex gap-4 items-center">
-            <div>
-              <label className="block text-sm font-medium text-quaternary mb-1">Filter by Zone</label>
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="flex flex-wrap gap-6 items-end">
+            <div className="min-w-48">
+              <label className="block text-sm font-semibold text-quaternary mb-2">Filter by Zone</label>
               <select
                 value={filterZone}
                 onChange={(e) => setFilterZone(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
               >
               <option value="">All Zones</option>
               <option value="PRC">PRC - Processing</option>
@@ -196,19 +240,26 @@ function PermitPlanning() {
               <option value="WS">WS - Workshop</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-quaternary mb-1">Filter by Status</label>
+          <div className="min-w-64">
+            <label className="block text-sm font-semibold text-quaternary mb-2">Filter by Status</label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
             >
               <option value="">All Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
+              <option value="DRAFT">Draft</option>
+              <option value="PENDING_AA_APPROVAL">Pending AA Approval</option>
+              <option value="AA_APPROVED">AA Approved</option>
+              <option value="FULLY_APPROVED">Fully Approved</option>
+              <option value="APPROVED_ALL">All Approved (AA + Fully)</option>
               <option value="ACTIVE">Active</option>
+              <option value="REJECTED_BY_AA">Rejected by AA</option>
+              <option value="REJECTED_BY_CC">Rejected by CC</option>
+              <option value="REJECTED_ALL">All Rejected</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="CANCELLED">Cancelled</option>
               <option value="EXPIRED">Expired</option>
-              <option value="REJECTED">Rejected</option>
             </select>
           </div>
           {(filterZone || filterStatus) && (
@@ -219,7 +270,11 @@ function PermitPlanning() {
                   setFilterZone('');
                   setFilterStatus('');
                 }}
+                className="flex items-center gap-2"
               >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
                 Clear Filters
               </Button>
             </div>
@@ -228,27 +283,52 @@ function PermitPlanning() {
       </div>
 
         {/* Permits List */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-quaternary">Work Permits</h2>
-            <div className="text-sm text-foreground">
-              Showing {filteredPermits.length} of {permits.length} permits
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="flex justify-between items-center p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-quaternary flex items-center">
+              <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Work Permits
+            </h2>
+            <div className="bg-tertiary px-4 py-2 rounded-full">
+              <span className="text-sm font-medium text-quaternary">
+                Showing {filteredPermits.length} of {permits.length} permits
+              </span>
             </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-foreground">Loading permits...</p>
+            <div className="flex justify-center items-center py-32">
+              <LoadingSpinner 
+                size="xl" 
+                variant="orbit" 
+                color="secondary" 
+                text="Loading permits data..." 
+              />
             </div>
           ) : filteredPermits.length === 0 ? (
-            <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-              <p className="text-foreground">
-                {permits.length === 0 ? 'No permits found. Create your first permit!' : 'No permits match your current filters.'}
+            <div className="text-center py-16">
+              <svg className="w-20 h-20 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {permits.length === 0 ? 'No permits found' : 'No permits match your filters'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {permits.length === 0 ? 'Create your first permit to get started!' : 'Try adjusting your filter criteria.'}
               </p>
+              {permits.length === 0 && (
+                <Button onClick={handleCreatePermit} className="bg-gradient-to-r from-primary to-primary/80">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Your First Permit
+                </Button>
+              )}
             </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">

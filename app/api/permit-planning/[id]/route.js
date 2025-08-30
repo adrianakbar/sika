@@ -143,13 +143,6 @@ export async function DELETE(request, { params }) {
       }, { status: 404 });
     }
     
-    // Check if permit can be deleted (optional: add business logic here)
-    if (existingPermit.status === 'ACTIVE') {
-      return Response.json({
-        success: false,
-        message: 'Cannot delete active permit. Please change status first.'
-      }, { status: 400 });
-    }
     
     // Delete permit
     await prisma.permitPlanning.delete({

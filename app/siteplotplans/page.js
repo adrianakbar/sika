@@ -8,6 +8,7 @@ function SitePlotPlans() {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [plotPoints, setPlotPoints] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,22 +34,49 @@ function SitePlotPlans() {
       setLoading(true);
       const userData = JSON.parse(localStorage.getItem("user") || "{}");
 
+      console.log('📊 Fetching permit data for user:', userData);
+
       // Fetch only permit planning data
       const permitResponse = await fetch(
         `/api/permit-planning?userId=${userData.id}`
       );
       const permitResult = await permitResponse.json();
 
+      console.log('📋 API Response:', permitResult);
+
       if (permitResult.success) {
-        // Convert permit data to plot points format and filter out old permits
-        const convertedPermits = permitResult.data
+        console.log(`📦 Total permits from API: ${permitResult.data.length}`);
+        
+        // Filter only fully approved permits
+        const approvedPermits = permitResult.data.filter((permit) => {
+          return permit.status === 'FULLY_APPROVED';
+        });
+        
+        console.log(`✅ Fully approved permits: ${approvedPermits.length} of ${permitResult.data.length}`);
+        
+        // Convert approved permit data to plot points format and filter out old permits
+        const convertedPermits = approvedPermits
           .map((permit) => {
+            console.log(`🔍 Processing permit ${permit.id}:`, {
+              status: permit.status,
+              startDate: permit.startDate,
+              endDate: permit.endDate,
+              coordinates: permit.coordinates,
+              zone: permit.zone
+            });
+            
             const coords = parseCoordinates(permit.coordinates, permit.zone);
             
             // Check if permit is currently running based on dates
             const currentDate = new Date();
             const startDate = new Date(permit.startDate);
             const endDate = new Date(permit.endDate);
+            
+            console.log(`📅 Date comparison for permit ${permit.id}:`, {
+              current: currentDate.toISOString().split('T')[0],
+              start: startDate.toISOString().split('T')[0],
+              end: endDate.toISOString().split('T')[0]
+            });
             
             // Set time to beginning of day for proper date comparison
             currentDate.setHours(0, 0, 0, 0);
@@ -58,31 +86,44 @@ function SitePlotPlans() {
             // Calculate days since end date
             const daysSinceEnd = Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24));
             
+            console.log(`⏰ Days since end for permit ${permit.id}: ${daysSinceEnd}`);
+            
             // Hide permit if it's 1 day or more past end date
             if (daysSinceEnd >= 1) {
+              console.log(`❌ Filtering out permit ${permit.id} - too old`);
               return null; // Will be filtered out
             }
             
             let dynamicStatus = permit.status.toLowerCase();
             
-            // Determine status based on date range regardless of original status
-            // (except for cancelled permits)
-            if (currentDate >= startDate && currentDate <= endDate && permit.status !== 'CANCELLED') {
-              dynamicStatus = 'running';
-            } else if (currentDate > endDate) {
-              // If current date is past end date, mark as completed
-              dynamicStatus = 'completed';
-            } else if (currentDate < startDate) {
-              // If current date is before start date, mark as pending
+            // Only modify status for date-based logic if permit is FULLY_APPROVED or ACTIVE
+            if (permit.status === 'FULLY_APPROVED' || permit.status === 'ACTIVE') {
+              // Determine status based on date range
+              if (currentDate >= startDate && currentDate <= endDate) {
+                dynamicStatus = 'running';
+                console.log(`🏃 Permit ${permit.id} set to RUNNING`);
+              } else if (currentDate > endDate) {
+                // If current date is past end date, mark as completed
+                dynamicStatus = 'completed';
+                console.log(`✅ Permit ${permit.id} set to COMPLETED`);
+              } else if (currentDate < startDate) {
+                // If current date is before start date, keep as approved but pending start
+                dynamicStatus = 'pending';
+                console.log(`⏳ Permit ${permit.id} set to PENDING (approved but not started)`);
+              }
+            } else if (permit.status === 'AA_APPROVED') {
+              // AA approved permits are shown but marked as waiting for CC approval
               dynamicStatus = 'pending';
+              console.log(`⏳ Permit ${permit.id} - AA approved, waiting for CC approval`);
             }
 
-            return {
+            const result = {
               id: permit.id,
               x: coords.x,
               y: coords.y,
               type: getPermitTypeCode(permit.workType),
               status: dynamicStatus,
+              originalStatus: permit.status, // Keep original status for reference
               permitNumber: permit.permitNumber,
               location: permit.workLocation,
               description: permit.workDescription,
@@ -100,12 +141,19 @@ function SitePlotPlans() {
             }),
             performingAuthority: permit.performingAuthority || "N/A",
             zone: permit.zone,
+            area: permit.zone, // Add this for area filtering to work
             company: permit.company,
             riskLevel: permit.riskLevel,
           };
+          
+          console.log(`✨ Final permit object ${permit.id}:`, result);
+          return result;
         })
         .filter(permit => permit !== null); // Remove permits that are more than 1 day past end date
 
+        console.log(`🎯 Final converted permits: ${convertedPermits.length}`);
+        console.log('📍 Plot points to display:', convertedPermits);
+        
         setPlotPoints(convertedPermits);
       }
     } catch (error) {
@@ -261,32 +309,68 @@ function SitePlotPlans() {
   };
 
   const getPointColor = (type, status) => {
-    // Color based on work type only, not status
+    // First check status for special cases
+    if (status === "cancelled") {
+      return "#6B7280"; // gray for cancelled
+    }
+    
+    // For active permits, add slight transparency or different shade based on status
+    let baseColor;
     switch (type) {
       case "HW":
-        return "#EF4444"; // red - Hot Work
+        baseColor = "#EF4444"; // red - Hot Work
+        break;
       case "CW":
-        return "#F59E0B"; // yellow - Critical Work
+        baseColor = "#F59E0B"; // yellow - Critical Work
+        break;
       case "GW":
-        return "#3B82F6"; // blue - General Work
+        baseColor = "#3B82F6"; // blue - General Work
+        break;
       case "BC":
-        return "#1F2937"; // black - Breaking Containment
+        baseColor = "#1F2937"; // black - Breaking Containment
+        break;
       default:
-        return "#6B7280"; // gray
+        baseColor = "#6B7280"; // gray
     }
+    
+    // Modify color based on status
+    if (status === "pending") {
+      // Add transparency to pending permits
+      return baseColor + "CC"; // Add transparency
+    } else if (status === "completed") {
+      // Make completed permits slightly darker
+      return baseColor + "DD";
+    }
+    
+    return baseColor; // running permits use full color
   };
 
   const getFilteredPoints = () => {
     let filtered = plotPoints;
+    
+    console.log('🔍 Filtering points:', {
+      totalPoints: plotPoints.length,
+      selectedFilter: selectedFilter,
+      selectedArea: selectedArea,
+      selectedStatus: selectedStatus
+    });
 
     if (selectedFilter !== "all") {
       filtered = filtered.filter((point) => point.type === selectedFilter);
+      console.log(`📝 After type filter (${selectedFilter}): ${filtered.length} points`);
     }
 
     if (selectedArea !== "all") {
       filtered = filtered.filter((point) => point.area === selectedArea);
+      console.log(`🗺️ After area filter (${selectedArea}): ${filtered.length} points`);
     }
 
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter((point) => point.status === selectedStatus);
+      console.log(`🔄 After status filter (${selectedStatus}): ${filtered.length} points`);
+    }
+
+    console.log('🎯 Final filtered points:', filtered);
     return filtered;
   };
 
@@ -312,6 +396,14 @@ function SitePlotPlans() {
     { value: "CCR", label: "CCR", color: "#3B82F6" },
     { value: "WS", label: "WS", color: "#06B6D4" },
     { value: "GMS", label: "GMS", color: "#8B5CF6" },
+  ];
+
+  const statusOptions = [
+    { value: "all", label: "Semua Status", color: "#6B7280" },
+    { value: "pending", label: "Pending", color: "#F59E0B" },
+    { value: "running", label: "Running", color: "#22C55E" },
+    { value: "completed", label: "Completed", color: "#3B82F6" },
+    { value: "cancelled", label: "Cancelled", color: "#EF4444" },
   ];
 
   if (loading) {
@@ -450,6 +542,57 @@ function SitePlotPlans() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">
+                      Filter by Status:
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {statusOptions.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setSelectedStatus(option.value)}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs transition-all ${
+                            selectedStatus === option.value
+                              ? "bg-quaternary text-white"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                        >
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: option.color }}
+                          ></div>
+                          <span className="font-medium">{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Visual Legend */}
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <h3 className="text-xs font-medium text-gray-700 mb-2">
+                      Status Legend:
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-opacity-100" style={{ backgroundColor: "#22C55E" }}></div>
+                        <span>Running (Full Color)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-opacity-80" style={{ backgroundColor: "#F59E0BCC" }}></div>
+                        <span>Pending (Transparent)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#3B82F6DD" }}></div>
+                        <span>Completed (Darker)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                        <span>Cancelled (Gray)</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -534,6 +677,10 @@ function SitePlotPlans() {
                         ? "bg-green-100 text-green-800"
                         : selectedPoint.status === "pending"
                         ? "bg-yellow-100 text-yellow-800"
+                        : selectedPoint.status === "completed"
+                        ? "bg-blue-100 text-blue-800"
+                        : selectedPoint.status === "cancelled"
+                        ? "bg-red-100 text-red-800"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
@@ -543,7 +690,28 @@ function SitePlotPlans() {
                       ? "On Progress"
                       : selectedPoint.status === "pending"
                       ? "Menunggu"
+                      : selectedPoint.status === "completed"
+                      ? "Selesai"
+                      : selectedPoint.status === "cancelled"
+                      ? "Dibatalkan"
                       : "Selesai"}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Approval Status
+                  </label>
+                  <div
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-1 ${
+                      selectedPoint.originalStatus === "FULLY_APPROVED"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {selectedPoint.originalStatus === "FULLY_APPROVED"
+                      ? "Fully Approved"
+                      : selectedPoint.originalStatus}
                   </div>
                 </div>
               </div>

@@ -3,331 +3,407 @@
 import { useState, useEffect } from "react";
 import withAuth from "../components/withAuth";
 import { useRouter } from "next/navigation";
+import ApprovalPanel from "../components/ApprovalPanel";
+import PermitSubmitButton from "../components/PermitSubmitButton";
+import PermitDeleteButton from "../components/PermitDeleteButton";
+import NotificationToast from "../components/NotificationToast";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 function Dashboard({ user }) {
-  const [dashboardData, setDashboardData] = useState({
-    activePermits: 0,
-    completedPermits: 0,
-    pendingApprovalPermits: 0,
-    expiredPermits: 0,
-    recentActivities: [],
-  });
+  const [dashboardData, setDashboardData] = useState(null);
+  const [selectedPermit, setSelectedPermit] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const router = useRouter();
 
-  // Fetch dashboard data
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      if (!user) return;
+  // Handle permit submit
+  const handlePermitSubmit = (updatedPermit) => {
+    setNotification({
+      show: true,
+      message: "Permit submitted for AA approval successfully!",
+      type: "success"
+    });
+    // Refresh dashboard data
+    fetchDashboardData();
+    // Update selected permit if it's the same one
+    if (selectedPermit && selectedPermit.id === updatedPermit.id) {
+      setSelectedPermit(updatedPermit);
+    }
+  };
 
-      try {
-        setDataLoading(true);
-        const response = await fetch(`/api/dashboard/stats?userId=${user.id}`);
-        const result = await response.json();
+  // Handle approval with notification
+  const handleApproval = (updatedPermit) => {
+    setNotification({
+      show: true,
+      message: `Permit approved successfully by ${user.role}`,
+      type: "success"
+    });
+    fetchDashboardData();
+    if (selectedPermit && selectedPermit.id === updatedPermit.id) {
+      setSelectedPermit(updatedPermit);
+    }
+  };
 
-        if (result.success) {
-          setDashboardData(result.data);
-        } else {
-          console.error("Failed to fetch dashboard data:", result.message);
-        }
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setDataLoading(false);
+  // Handle rejection with notification
+  const handleRejection = (updatedPermit) => {
+    setNotification({
+      show: true,
+      message: `Permit rejected by ${user.role}`,
+      type: "success"
+    });
+    fetchDashboardData();
+    if (selectedPermit && selectedPermit.id === updatedPermit.id) {
+      setSelectedPermit(updatedPermit);
+    }
+  };
+
+  // Fetch dashboard data berdasarkan role
+  const fetchDashboardData = async () => {
+    if (!user) return;
+
+    try {
+      setDataLoading(true);
+      const response = await fetch(`/api/dashboard/permits?userId=${user.id}&role=${user.role}`);
+      const result = await response.json();
+
+      if (result.success) {
+        setDashboardData(result.data);
+      } else {
+        console.error("Failed to fetch dashboard data:", result.message);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDashboardData();
   }, [user]);
 
+  const getRoleDescription = (role) => {
+    const roles = {
+      'PTWC': 'Permit to Work Controller',
+      'AA': 'Area Authority',
+      'CC': 'Company Controller',
+      'ADMIN': 'Administrator'
+    };
+    return roles[role] || role;
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      'DRAFT': { color: 'bg-gray-500', text: 'Draft' },
+      'PENDING_AA_APPROVAL': { color: 'bg-yellow-500', text: 'Pending AA' },
+      'AA_APPROVED': { color: 'bg-quaternary', text: 'AA Approved' },
+      'FULLY_APPROVED': { color: 'bg-secondary', text: 'Fully Approved' },
+      'ACTIVE': { color: 'bg-secondary', text: 'Active' },
+      'REJECTED_BY_AA': { color: 'bg-primary', text: 'Rejected by AA' },
+      'REJECTED_BY_CC': { color: 'bg-primary', text: 'Rejected by CC' },
+      'COMPLETED': { color: 'bg-quaternary', text: 'Completed' },
+      'CANCELLED': { color: 'bg-gray-400', text: 'Cancelled' }
+    };
+
+    const config = statusConfig[status] || { color: 'bg-gray-500', text: status };
+    return (
+      <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold text-white rounded-full ${config.color} shadow-sm`}>
+        {config.text}
+      </span>
+    );
+  };
+
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       {/* Welcome Section */}
       <div className="mb-8">
-        <div className="bg-gradient-to-r from-primary to-primary/80 text-foreground rounded-2xl p-8">
-          <h2 className="text-3xl font-bold mb-2">Selamat Datang di SIKA</h2>
-          <p className="text-xl opacity-90">
-            Sistem Izin Kerja Selamat PT. Pertamina Hulu Energi WMO (Pertamina Subholding Upstream)
-          </p>
-          <p className="mt-4 opacity-75">
-            Kelola izin kerja Anda dengan aman dan efisien melalui sistem
-            terintegrasi
-          </p>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-800">
-                {dataLoading ? "..." : dashboardData.activePermits}
+        <div className="bg-primary text-white rounded-2xl p-8 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Selamat Datang di SIKA</h1>
+              <p className="text-xl opacity-90 mb-2">
+                Sistem Izin Kerja Selamat PT. Pertamina Hulu Energi WMO
               </p>
-              <p className="text-gray-600">Permit Aktif</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-800">
-                {dataLoading ? "..." : dashboardData.completedPermits}
-              </p>
-              <p className="text-gray-600">Permit Selesai</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 bg-yellow-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-yellow-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-800">
-                {dataLoading ? "..." : dashboardData.pendingApprovalPermits}
-              </p>
-              <p className="text-gray-600">Menunggu Approval</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-3 bg-red-100 rounded-lg">
-              <svg
-                className="w-6 h-6 text-red-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-                />
-              </svg>
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-gray-800">
-                {dataLoading ? "..." : dashboardData.expiredPermits}
-              </p>
-              <p className="text-gray-600">Expired</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Aktivitas Terbaru
-            </h3>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {dataLoading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-gray-500 mt-2">Memuat aktivitas...</p>
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <p className="text-lg font-medium">
+                    {user?.name}
+                  </p>
+                  <p className="text-sm opacity-75">
+                    {getRoleDescription(user?.role)}
+                  </p>
                 </div>
-              ) : dashboardData.recentActivities.length > 0 ? (
-                dashboardData.recentActivities.map((activity, index) => (
-                  <div key={index} className="flex items-center">
-                    <div
-                      className={`w-3 h-3 rounded-full mr-3 ${
-                        activity.type === "success"
-                          ? "bg-green-500"
-                          : activity.type === "warning"
-                          ? "bg-yellow-500"
-                          : activity.type === "info"
-                          ? "bg-blue-500"
-                          : activity.type === "error"
-                          ? "bg-red-500"
-                          : "bg-gray-400"
-                      }`}
-                    />
-                    <div className="flex-1">
-                      <p className="text-gray-800 font-medium">
-                        {activity.action}
-                      </p>
-                      <p className="text-gray-500 text-sm">{activity.time}</p>
-                      {activity.location && (
-                        <p className="text-gray-400 text-xs">
-                          {activity.location}
+              </div>
+            </div>
+            <div className="hidden md:block">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold">
+                    {dashboardData?.stats?.total || 0}
+                  </div>
+                  <div className="text-sm opacity-75">Total Permits</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {dataLoading ? (
+        <div className="min-h-screen bg-gradient-to-br from-tertiary/10 to-white p-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-center items-center h-96">
+              <LoadingSpinner 
+                size="xl" 
+                variant="modern" 
+                color="primary" 
+                text="Loading dashboard data..." 
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Statistics Cards Row */}
+          <div className="lg:col-span-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Total Permits Card */}
+              <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-primary transform transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Permits</p>
+                    <p className="text-3xl font-bold text-quaternary">{dashboardData?.stats?.total || 0}</p>
+                  </div>
+                  <div className="bg-primary/10 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Permits Card */}
+              <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-secondary transform transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Active</p>
+                    <p className="text-3xl font-bold text-secondary">{dashboardData?.stats?.active || 0}</p>
+                  </div>
+                  <div className="bg-secondary/10 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pending Approval Card */}
+              <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-yellow-500 transform transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Pending Approval</p>
+                    <p className="text-3xl font-bold text-yellow-600">
+                      {(dashboardData?.stats?.pendingAA || 0) + (dashboardData?.stats?.pendingApproval || 0)}
+                    </p>
+                  </div>
+                  <div className="bg-yellow-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rejected Card */}
+              <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-red-500 transform transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Rejected</p>
+                    <p className="text-3xl font-bold text-red-600">{dashboardData?.stats?.rejected || 0}</p>
+                  </div>
+                  <div className="bg-red-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Left Panel - Quick Actions */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-quaternary mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Quick Actions
+              </h3>
+              <div className="space-y-3">
+                {user?.role === 'PTWC' && (
+                  <button
+                    onClick={() => router.push('/permitplanning')}
+                    className="w-full flex items-center px-4 py-3 text-sm bg-primary text-white rounded-lg hover:from-primary/90 hover:to-primary/70 transition-all transform hover:scale-105 shadow-md"
+                  >
+                    <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create New Permit
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => router.push('/siteplotplans')}
+                  className="w-full flex items-center px-4 py-3 text-sm bg-primary text-white rounded-lg hover:from-secondary/90 hover:to-secondary/70 transition-all transform hover:scale-105 shadow-md"
+                >
+                  <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  View Site Plot
+                </button>
+                
+                {user?.role === 'ADMIN' && (
+                  <button
+                    onClick={() => router.push('/permitplanning')}
+                    className="w-full flex items-center px-4 py-3 text-sm bg-gradient-to-r from-quaternary to-quaternary/80 text-white rounded-lg hover:from-quaternary/90 hover:to-quaternary/70 transition-all transform hover:scale-105 shadow-md"
+                  >
+                    <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Manage All Permits
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Panel - Permits List and Approval */}
+          <div className="lg:col-span-3">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Permits List */}
+              <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-quaternary flex items-center">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    {dashboardData?.role === 'PTWC' ? 'My Permits' :
+                     dashboardData?.role === 'AA' ? 'Permits Awaiting AA Approval' :
+                     dashboardData?.role === 'CC' ? 'Permits Awaiting CC Approval' :
+                     'All Permits'}
+                  </h3>
+                  <div className="bg-tertiary px-3 py-1 rounded-full">
+                    <span className="text-sm font-medium text-quaternary">
+                      {dashboardData?.permits?.length || 0} permits
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                  {dashboardData?.permits?.length > 0 ? (
+                    dashboardData.permits.map((permit) => (
+                      <div
+                        key={permit.id}
+                        onClick={() => setSelectedPermit(permit)}
+                        className={`p-4 border-2 rounded-xl cursor-pointer transition-all transform hover:scale-102 ${
+                          selectedPermit?.id === permit.id
+                            ? 'border-primary bg-primary/5 shadow-lg'
+                            : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-semibold text-quaternary text-lg">
+                            #{permit.permitNumber}
+                          </h4>
+                          {getStatusBadge(permit.status)}
+                        </div>
+                        <p className="text-sm text-gray-700 mb-2 line-clamp-2">
+                          {permit.workDescription}
                         </p>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/20 text-secondary">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            </svg>
+                            {permit.zone}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-quaternary/20 text-quaternary">
+                            {permit.workType?.replace('_', ' ')}
+                          </span>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            permit.riskLevel === 'HIGH' ? 'bg-red-100 text-red-700' :
+                            permit.riskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            {permit.riskLevel}
+                          </span>
+                        </div>
+                        {permit.user && (
+                          <p className="text-xs text-gray-500 flex items-center mb-2">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            By: {permit.user.name}
+                          </p>
+                        )}
+                        
+                        {/* Submit Button for DRAFT permits */}
+                        {permit.status === 'DRAFT' && user && (
+                          <div className="mt-3 pt-2 border-t border-gray-200">
+                            <PermitSubmitButton 
+                              permit={permit} 
+                              user={user} 
+                              onSubmit={handlePermitSubmit}
+                              hideNotification={true}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <svg className="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-gray-500 text-lg">No permits found</p>
+                      <p className="text-gray-400 text-sm mb-4">Create your first permit to get started</p>
+                      {user?.role === 'PTWC' && (
+                        <button
+                          onClick={() => router.push('/permitplanning')}
+                          className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors"
+                        >
+                          Create New Permit
+                        </button>
                       )}
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <svg
-                    className="w-12 h-12 text-gray-400 mx-auto mb-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                  <p className="text-gray-500">Belum ada aktivitas terbaru</p>
+                  )}
                 </div>
-              )}
+              </div>
+
+              {/* Approval Panel */}
+              <div>
+                <ApprovalPanel
+                  permit={selectedPermit}
+                  user={user}
+                  onApprove={handleApproval}
+                  onReject={handleRejection}
+                  onRefresh={fetchDashboardData}
+                  hideNotification={true}
+                />
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-6 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800">
-              Quick Actions
-            </h3>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => router.push("/permitplanning")}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="text-center">
-                  <svg
-                    className="w-8 h-8 text-gray-400 mx-auto mb-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  <p className="text-gray-600 font-medium">Buat Permit Baru</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => router.push("/permitplanning")}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="text-center">
-                  <svg
-                    className="w-8 h-8 text-gray-400 mx-auto mb-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                    />
-                  </svg>
-                  <p className="text-gray-600 font-medium">Lihat Permit</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => router.push("/goal")}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="text-center">
-                  <svg
-                    className="w-8 h-8 text-gray-400 mx-auto mb-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                    />
-                  </svg>
-                  <p className="text-gray-600 font-medium">Tujuan</p>
-                </div>
-              </button>
-
-              <button
-                onClick={() => router.push("/element")}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
-              >
-                <div className="text-center">
-                  <svg
-                    className="w-8 h-8 text-gray-400 mx-auto mb-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
-                  </svg>
-                  <p className="text-gray-600 font-medium">12 Elemen</p>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Notification Toast */}
+      <NotificationToast
+        notification={notification.show ? notification : null}
+        onClose={() => setNotification({ show: false, message: "", type: "" })}
+      />
     </div>
   );
 }

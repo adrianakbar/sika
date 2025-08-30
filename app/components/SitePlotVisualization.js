@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function SitePlotVisualization({ 
   onPointClick, 
@@ -62,13 +63,13 @@ export default function SitePlotVisualization({
     }
     
     if (point.type === 'permit') {
-      switch (point.status) {
-        case 'PENDING': return '#9fc87e';
-        case 'APPROVED': return '#075b5e';
-        case 'REJECTED': return '#ff3f33';
-        case 'EXPIRED': return '#9e9e9e';
-        case 'ACTIVE': return '#075b5e';
-        default: return '#9fc87e';
+      // Hanya tampilkan permit yang ACTIVE (sudah fully approved)
+      switch (point.workType) {
+        case 'COLD_WORK': return '#0066cc'; // Blue pin
+        case 'COLD_WORK_BREAKING': return '#000000'; // Black pin
+        case 'HOT_WORK_SPARK': return '#ffcc00'; // Yellow pin
+        case 'HOT_WORK_FLAME': return '#ff3333'; // Red pin
+        default: return '#075b5e'; // Default color
       }
     } else {
       // Site plan points
@@ -104,10 +105,12 @@ export default function SitePlotVisualization({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96 bg-gray-50 border border-gray-200 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading site plot visualization...</p>
-        </div>
+        <LoadingSpinner 
+          size="lg" 
+          variant="pulse" 
+          color="primary" 
+          text="Loading site plot visualization..." 
+        />
       </div>
     );
   }

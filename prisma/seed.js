@@ -17,6 +17,42 @@ async function main() {
     },
   })
 
+  // Create PTWC user
+  const ptwc = await prisma.user.upsert({
+    where: { email: 'ptwc@sika.com' },
+    update: {},
+    create: {
+      name: 'PTWC Controller',
+      email: 'ptwc@sika.com',
+      password: 'ptwc123', // In production, hash this password
+      role: 'PTWC',
+    },
+  })
+
+  // Create AA user
+  const aa = await prisma.user.upsert({
+    where: { email: 'aa@sika.com' },
+    update: {},
+    create: {
+      name: 'Area Authority',
+      email: 'aa@sika.com',
+      password: 'aa123', // In production, hash this password
+      role: 'AA',
+    },
+  })
+
+  // Create CC user
+  const cc = await prisma.user.upsert({
+    where: { email: 'cc@sika.com' },
+    update: {},
+    create: {
+      name: 'Company Controller',
+      email: 'cc@sika.com',
+      password: 'cc123', // In production, hash this password
+      role: 'CC',
+    },
+  })
+
   // Create regular user
   const user = await prisma.user.upsert({
     where: { email: 'user@sika.com' },
@@ -70,10 +106,14 @@ async function main() {
       safetyMeasures: 'Lockout/tagout procedure, work area isolation',
       emergencyContact: '+62-811-2345-6789',
       relatedDocuments: '{"l2ra": {"checked": true, "number": "L2RA-001"}, "confineSpace": {"checked": false, "number": ""}, "tkiTko": {"checked": false, "number": ""}, "other": {"checked": false, "number": ""}}',
-      status: 'APPROVED',
-      approvedBy: 'Manager K3',
-      approvedAt: new Date(),
-      userId: user.id,
+      status: 'ACTIVE',
+      aaApprovedBy: aa.id,
+      aaApprovedAt: new Date(),
+      aaComments: 'Approved by Area Authority',
+      ccApprovedBy: cc.id,
+      ccApprovedAt: new Date(),
+      ccComments: 'Approved by Company Controller',
+      userId: ptwc.id,
     },
   })
 
@@ -98,8 +138,8 @@ async function main() {
       safetyMeasures: 'Fire watch, gas monitoring, hot work permit',
       emergencyContact: '+62-811-9876-5432',
       relatedDocuments: '{"l2ra": {"checked": true, "number": "L2RA-002"}, "confineSpace": {"checked": true, "number": "CSE-001"}, "tkiTko": {"checked": false, "number": ""}, "other": {"checked": false, "number": ""}}',
-      status: 'UNDER_REVIEW',
-      userId: user.id,
+      status: 'PENDING_AA_APPROVAL',
+      userId: ptwc.id,
     },
   })
 
@@ -124,10 +164,11 @@ async function main() {
       safetyMeasures: 'Atmospheric testing, rescue team standby, continuous monitoring',
       emergencyContact: '+62-811-1111-2222',
       relatedDocuments: '{"l2ra": {"checked": true, "number": "L2RA-003"}, "confineSpace": {"checked": true, "number": "CSE-002"}, "tkiTko": {"checked": true, "number": "TKI-001"}, "other": {"checked": false, "number": ""}}',
-      status: 'COMPLETED',
-      approvedBy: 'Safety Manager',
-      approvedAt: new Date('2025-08-19T10:00:00.000Z'),
-      userId: admin.id,
+      status: 'AA_APPROVED',
+      aaApprovedBy: aa.id,
+      aaApprovedAt: new Date(),
+      aaComments: 'Critical work approved with strict monitoring',
+      userId: ptwc.id,
     },
   })
 
@@ -152,15 +193,13 @@ async function main() {
       safetyMeasures: 'LOTO procedure, electrical isolation, voltage testing',
       emergencyContact: '+62-811-3333-4444',
       relatedDocuments: '{"l2ra": {"checked": false, "number": ""}, "confineSpace": {"checked": false, "number": ""}, "tkiTko": {"checked": true, "number": "TKO-001"}, "other": {"checked": true, "number": "ELECTRICAL-PERMIT-001"}}',
-      status: 'ACTIVE',
-      approvedBy: 'Electrical Supervisor',
-      approvedAt: new Date('2025-08-20T15:00:00.000Z'),
-      userId: user.id,
+      status: 'DRAFT',
+      userId: ptwc.id,
     },
   })
 
-  // Create expired permit (for testing)
-  const expiredPermit = await prisma.permitPlanning.create({
+  // Create permit rejected by AA
+  const rejectedPermit = await prisma.permitPlanning.create({
     data: {
       permitNumber: 'SIKA-2025-005',
       workDescription: 'Pembersihan saluran air limbah',
@@ -172,19 +211,20 @@ async function main() {
       workType: 'COLD_WORK',
       riskLevel: 'LOW',
       startDate: new Date('2025-08-15T08:00:00.000Z'),
-      endDate: new Date('2025-08-15T17:00:00.000Z'), // Already passed
+      endDate: new Date('2025-08-15T17:00:00.000Z'),
       performingAuthority: 'Operations Supervisor',
       company: 'PT Cleaning Service',
       areaAuthority: 'WWTP Manager',
       siteControllerName: 'Joko Susilo',
-      ppeRequired: 'Rubber boots, gloves, mask',
-      safetyMeasures: 'Confined space monitoring, ventilation',
+      ppeRequired: 'Rubber boots, gloves, protective clothing',
+      safetyMeasures: 'Gas detection, ventilation, safety signage',
       emergencyContact: '+62-811-5555-6666',
-      relatedDocuments: '{"l2ra": {"checked": false, "number": ""}, "confineSpace": {"checked": true, "number": "CSE-003"}, "tkiTko": {"checked": false, "number": ""}, "other": {"checked": false, "number": ""}}',
-      status: 'ACTIVE', // Should be expired
-      approvedBy: 'Operations Manager',
-      approvedAt: new Date('2025-08-14T10:00:00.000Z'),
-      userId: user.id,
+      relatedDocuments: '{"l2ra": {"checked": false, "number": ""}, "confineSpace": {"checked": false, "number": ""}, "tkiTko": {"checked": false, "number": ""}, "other": {"checked": false, "number": ""}}',
+      status: 'REJECTED_BY_AA',
+      rejectedBy: aa.id,
+      rejectedAt: new Date(),
+      rejectionReason: 'Insufficient safety measures for confined space work',
+      userId: ptwc.id,
     },
   })
 
@@ -208,7 +248,7 @@ async function main() {
     },
   })
 
-  console.log({ admin, user, goal1, goal2, permit1, permit2, permit3, permit4, expiredPermit, orgHead, orgManager })
+  console.log({ admin, ptwc, aa, cc, user, goal1, goal2, permit1, permit2, permit3, permit4, rejectedPermit, orgHead, orgManager })
   console.log('Seeding finished.')
 }
 
