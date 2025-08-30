@@ -465,70 +465,171 @@ function PermitPlanning() {
               </div>
               
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <strong>Work Permit Type:</strong> 
-                    <div className="mt-1 flex items-center gap-2">
-                      {(() => {
-                        const workTypeInfo = {
-                          'COLD_WORK': { label: 'General Work', color: 'bg-blue-500' },
-                          'COLD_WORK_BREAKING': { label: 'Breaking Containment', color: 'bg-black' },
-                          'HOT_WORK_SPARK': { label: 'Critical Work', color: 'bg-yellow-500' },
-                          'HOT_WORK_FLAME': { label: 'Hot Work', color: 'bg-red-500' }
-                        };
-                        const info = workTypeInfo[selectedPermit.workType] || { label: selectedPermit.workType, color: 'bg-gray-500' };
-                        return (
-                          <>
-                            <div className={`w-3 h-3 rounded-full ${info.color}`}></div>
-                            <span>{info.label}</span>
-                          </>
-                        );
-                      })()}
+                {/* Basic Information Section */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Basic Information
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <strong>Work Permit Type:</strong> 
+                      <div className="mt-1 flex items-center gap-2">
+                        {(() => {
+                          const workTypeInfo = {
+                            'COLD_WORK': { label: 'General Work', color: 'bg-blue-500' },
+                            'COLD_WORK_BREAKING': { label: 'Breaking Containment', color: 'bg-black' },
+                            'HOT_WORK_SPARK': { label: 'Critical Work', color: 'bg-yellow-500' },
+                            'HOT_WORK_FLAME': { label: 'Hot Work', color: 'bg-red-500' }
+                          };
+                          const info = workTypeInfo[selectedPermit.workType] || { label: selectedPermit.workType, color: 'bg-gray-500' };
+                          return (
+                            <>
+                              <div className={`w-3 h-3 rounded-full ${info.color}`}></div>
+                              <span>{info.label}</span>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <strong>Risk Level:</strong> {getRiskLevelBadge(selectedPermit.riskLevel)}
-                  </div>
-                  <div>
-                    <strong>Zone:</strong> {selectedPermit.zone}
-                  </div>
-                  <div>
-                    <strong>Status:</strong> {getStatusBadge(selectedPermit.status)}
+                    <div>
+                      <strong>Risk Level:</strong> {getRiskLevelBadge(selectedPermit.riskLevel)}
+                    </div>
+                    <div>
+                      <strong>Zone:</strong> 
+                      <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">
+                        {selectedPermit.zone}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>Status:</strong> {getStatusBadge(selectedPermit.status)}
+                    </div>
+                    <div>
+                      <strong>Work Location:</strong> 
+                      <p className="text-gray-700 text-sm mt-1">{selectedPermit.workLocation}</p>
+                    </div>
+                    <div>
+                      <strong>Coordinates:</strong> 
+                      <p className="text-gray-700 text-sm mt-1">{selectedPermit.coordinates || 'Not specified'}</p>
+                    </div>
                   </div>
                 </div>
                 
-                <div>
-                  <strong>Work Description:</strong>
-                  <p className="mt-1 text-gray-700">{selectedPermit.workDescription}</p>
+                {/* Work Description Section */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    Work Description
+                  </h4>
+                  <p className="text-gray-700">{selectedPermit.workDescription}</p>
+                </div>
+                
+                {/* Schedule Section */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Schedule
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <strong>Start Date & Time:</strong><br/>
+                      <span className="text-green-600 font-medium">
+                        {new Date(selectedPermit.startDate).toLocaleDateString('id-ID', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short', 
+                          day: 'numeric'
+                        })} at {new Date(selectedPermit.startDate).toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>End Date & Time:</strong><br/>
+                      <span className="text-red-600 font-medium">
+                        {new Date(selectedPermit.endDate).toLocaleDateString('id-ID', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short', 
+                          day: 'numeric'
+                        })} at {new Date(selectedPermit.endDate).toLocaleTimeString('id-ID', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div className="col-span-2">
+                      <strong>Duration:</strong>
+                      <span className="ml-2 text-gray-700">
+                        {(() => {
+                          const start = new Date(selectedPermit.startDate);
+                          const end = new Date(selectedPermit.endDate);
+                          const diffMs = end - start;
+                          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                          const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                          
+                          if (diffDays > 0) {
+                            return `${diffDays} day(s) ${diffHours} hour(s)`;
+                          } else {
+                            return `${diffHours} hour(s)`;
+                          }
+                        })()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Personnel Information */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <strong>Performing Authority:</strong> {selectedPermit.performingAuthority || 'N/A'}
-                  </div>
-                  <div>
-                    <strong>Company:</strong> {selectedPermit.company || 'N/A'}
-                  </div>
-                  <div>
-                    <strong>Site Controller:</strong> {selectedPermit.siteControllerName || 'N/A'}
-                  </div>
-                  <div>
-                    <strong>Area Authority:</strong> {selectedPermit.areaAuthority || 'N/A'}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                    Personnel & Responsibilities
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <strong>Performing Authority:</strong> 
+                      <p className="text-gray-700 mt-1">{selectedPermit.performingAuthority || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <strong>Company:</strong> 
+                      <p className="text-gray-700 mt-1">{selectedPermit.company || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <strong>Site Controller:</strong> 
+                      <p className="text-gray-700 mt-1">{selectedPermit.siteControllerName || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <strong>Area Authority:</strong> 
+                      <p className="text-gray-700 mt-1">{selectedPermit.areaAuthority || 'N/A'}</p>
+                    </div>
                   </div>
                 </div>
                 
                 {/* Related Documents */}
                 {selectedPermit.relatedDocuments && (
-                  <div>
-                    <strong>Related Documents:</strong>
-                    <div className="mt-2 space-y-1">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Related Documents
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {(() => {
                         try {
                           const docs = typeof selectedPermit.relatedDocuments === 'string' 
                             ? JSON.parse(selectedPermit.relatedDocuments) 
                             : selectedPermit.relatedDocuments;
-                          return Object.entries(docs).map(([key, doc]) => {
+                          const documentsList = Object.entries(docs).map(([key, doc]) => {
                             if (doc.checked) {
                               const labels = {
                                 // New document types
@@ -543,43 +644,156 @@ function PermitPlanning() {
                                 confineSpace: 'Confined Space Entry Permit (CSEP)'
                               };
                               return (
-                                <div key={key} className="text-sm">
-                                  • {labels[key] || key}: {doc.number}
+                                <div key={key} className="flex items-center p-2 bg-white rounded border border-gray-200">
+                                  <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900">{labels[key] || key}</div>
+                                    <div className="text-xs text-gray-500">Doc #: {doc.number || 'N/A'}</div>
+                                  </div>
                                 </div>
                               );
                             }
                             return null;
                           }).filter(Boolean);
+                          
+                          return documentsList.length > 0 ? documentsList : 
+                            <div className="text-sm text-gray-500 italic">No documents attached</div>;
                         } catch (e) {
-                          return <div className="text-sm text-gray-500">Invalid document format</div>;
+                          return <div className="text-sm text-red-500">Error loading documents</div>;
                         }
                       })()}
                     </div>
                   </div>
                 )}
                 
-                {selectedPermit.equipmentNeeded && (
-                  <div>
-                    <strong>Equipment Needed:</strong>
-                    <p className="mt-1 text-gray-700">{selectedPermit.equipmentNeeded}</p>
-                  </div>
-                )}
+                {/* Safety Information */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Safety & Equipment
+                  </h4>
+                  
+                  {selectedPermit.equipmentNeeded && (
+                    <div className="mb-4">
+                      <strong className="text-sm">PPE Required:</strong>
+                      <p className="text-gray-700 text-sm mt-1 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        {selectedPermit.equipmentNeeded}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {selectedPermit.safetyMeasures && (
+                    <div>
+                      <strong className="text-sm">Safety Measures:</strong>
+                      <p className="text-gray-700 text-sm mt-1 p-2 bg-green-50 border-l-4 border-green-400 rounded">
+                        {selectedPermit.safetyMeasures}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {!selectedPermit.equipmentNeeded && !selectedPermit.safetyMeasures && (
+                    <p className="text-gray-500 text-sm italic">No safety information specified</p>
+                  )}
+                </div>
                 
-                {selectedPermit.safetyMeasures && (
-                  <div>
-                    <strong>Safety Measures:</strong>
-                    <p className="mt-1 text-gray-700">{selectedPermit.safetyMeasures}</p>
+                {/* Approval Workflow */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Approval Workflow
+                  </h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const workflows = [
+                        { status: 'DRAFT', label: 'Draft Created', icon: '📝', completed: !['DRAFT'].includes(selectedPermit.status) },
+                        { status: 'PENDING_AA_APPROVAL', label: 'Submitted for AA Approval', icon: '📤', completed: !['DRAFT', 'PENDING_AA_APPROVAL'].includes(selectedPermit.status) },
+                        { status: 'AA_APPROVED', label: 'AA Approved', icon: '✅', completed: !['DRAFT', 'PENDING_AA_APPROVAL', 'AA_APPROVED'].includes(selectedPermit.status) },
+                        { status: 'FULLY_APPROVED', label: 'CC Approved (Fully Approved)', icon: '✅', completed: ['ACTIVE'].includes(selectedPermit.status) },
+                        { status: 'ACTIVE', label: 'Active & Operational', icon: '🟢', completed: selectedPermit.status === 'ACTIVE' }
+                      ];
+                      
+                      return workflows.map((workflow, index) => (
+                        <div key={workflow.status} className={`flex items-center p-2 rounded ${
+                          selectedPermit.status === workflow.status ? 'bg-blue-100 border border-blue-300' :
+                          workflow.completed ? 'bg-green-100' : 'bg-gray-100'
+                        }`}>
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs mr-3 ${
+                            selectedPermit.status === workflow.status ? 'bg-blue-500 text-white' :
+                            workflow.completed ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-600'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <span className={`text-sm ${
+                              selectedPermit.status === workflow.status ? 'font-semibold text-blue-700' :
+                              workflow.completed ? 'text-green-700' : 'text-gray-600'
+                            }`}>
+                              {workflow.icon} {workflow.label}
+                            </span>
+                          </div>
+                          {selectedPermit.status === workflow.status && (
+                            <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">Current</span>
+                          )}
+                          {workflow.completed && selectedPermit.status !== workflow.status && (
+                            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                        </div>
+                      ));
+                    })()}
                   </div>
-                )}
+                </div>
                 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <strong>Start Date:</strong><br/>
-                    {new Date(selectedPermit.startDate).toLocaleDateString()}
-                  </div>
-                  <div>
-                    <strong>End Date:</strong><br/>
-                    {new Date(selectedPermit.endDate).toLocaleDateString()}
+                {/* Metadata */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-quaternary mb-3 flex items-center">
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Additional Information
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <strong>Created:</strong><br/>
+                      <span className="text-gray-600">
+                        {selectedPermit.createdAt ? new Date(selectedPermit.createdAt).toLocaleDateString('id-ID', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>Last Updated:</strong><br/>
+                      <span className="text-gray-600">
+                        {selectedPermit.updatedAt ? new Date(selectedPermit.updatedAt).toLocaleDateString('id-ID', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <strong>Permit ID:</strong><br/>
+                      <span className="text-gray-600 font-mono">#{selectedPermit.id}</span>
+                    </div>
+                    <div>
+                      <strong>Creator:</strong><br/>
+                      <span className="text-gray-600">{selectedPermit.user?.name || 'Unknown'}</span>
+                    </div>
                   </div>
                 </div>
               </div>

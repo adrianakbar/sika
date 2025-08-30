@@ -47,12 +47,12 @@ function SitePlotPlans() {
       if (permitResult.success) {
         console.log(`📦 Total permits from API: ${permitResult.data.length}`);
         
-        // Filter only fully approved permits
+        // Filter fully approved and active permits
         const approvedPermits = permitResult.data.filter((permit) => {
-          return permit.status === 'FULLY_APPROVED';
+          return permit.status === 'FULLY_APPROVED' || permit.status === 'ACTIVE';
         });
         
-        console.log(`✅ Fully approved permits: ${approvedPermits.length} of ${permitResult.data.length}`);
+        console.log(`✅ Fully approved and active permits: ${approvedPermits.length} of ${permitResult.data.length}`);
         
         // Convert approved permit data to plot points format and filter out old permits
         const convertedPermits = approvedPermits
@@ -88,10 +88,15 @@ function SitePlotPlans() {
             
             console.log(`⏰ Days since end for permit ${permit.id}: ${daysSinceEnd}`);
             
-            // Hide permit if it's 1 day or more past end date
-            if (daysSinceEnd >= 1) {
-              console.log(`❌ Filtering out permit ${permit.id} - too old`);
+            // Hide permit if it's 1 day or more past end date, BUT keep ACTIVE permits visible
+            if (daysSinceEnd >= 1 && permit.status !== 'ACTIVE') {
+              console.log(`❌ Filtering out permit ${permit.id} - too old (non-ACTIVE permit)`);
               return null; // Will be filtered out
+            }
+            
+            // Log ACTIVE permits that are being kept visible despite being past end date
+            if (permit.status === 'ACTIVE' && daysSinceEnd >= 1) {
+              console.log(`🟢 Keeping ACTIVE permit ${permit.id} visible despite being ${daysSinceEnd} days past end date`);
             }
             
             let dynamicStatus = permit.status.toLowerCase();

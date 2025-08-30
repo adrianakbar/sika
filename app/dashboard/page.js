@@ -166,13 +166,14 @@ function Dashboard({ user }) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Statistics Cards Row */}
           <div className="lg:col-span-4 mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Total Permits Card */}
               <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-primary transform transition-all hover:scale-105">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Permits</p>
                     <p className="text-3xl font-bold text-quaternary">{dashboardData?.stats?.total || 0}</p>
+                    <p className="text-xs text-gray-500 mt-1">All time</p>
                   </div>
                   <div className="bg-primary/10 p-3 rounded-full">
                     <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,6 +189,7 @@ function Dashboard({ user }) {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Active</p>
                     <p className="text-3xl font-bold text-secondary">{dashboardData?.stats?.active || 0}</p>
+                    <p className="text-xs text-gray-500 mt-1">Currently running</p>
                   </div>
                   <div className="bg-secondary/10 p-3 rounded-full">
                     <svg className="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,13 +199,32 @@ function Dashboard({ user }) {
                 </div>
               </div>
 
+              {/* Fully Approved Card */}
+              <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-green-500 transform transition-all hover:scale-105">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Approved</p>
+                    <p className="text-3xl font-bold text-green-600">{dashboardData?.stats?.fullyApproved || 0}</p>
+                    <p className="text-xs text-gray-500 mt-1">Ready to start</p>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
               {/* Pending Approval Card */}
               <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-l-yellow-500 transform transition-all hover:scale-105">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Pending Approval</p>
+                    <p className="text-sm font-medium text-gray-600">Pending</p>
                     <p className="text-3xl font-bold text-yellow-600">
-                      {(dashboardData?.stats?.pendingAA || 0) + (dashboardData?.stats?.pendingApproval || 0)}
+                      {(dashboardData?.stats?.pendingAA || 0) + (dashboardData?.stats?.pendingApproval || 0) + (dashboardData?.stats?.draft || 0)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {dashboardData?.stats?.draft ? `${dashboardData.stats.draft} draft` : 'Needs approval'}
                     </p>
                   </div>
                   <div className="bg-yellow-100 p-3 rounded-full">
@@ -220,12 +241,126 @@ function Dashboard({ user }) {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Rejected</p>
                     <p className="text-3xl font-bold text-red-600">{dashboardData?.stats?.rejected || 0}</p>
+                    <p className="text-xs text-gray-500 mt-1">Needs revision</p>
                   </div>
                   <div className="bg-red-100 p-3 rounded-full">
                     <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Additional Statistics Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              {/* Risk Level Distribution */}
+              <div className="bg-white rounded-xl shadow-lg p-4 border-l-4 border-l-purple-500">
+                <h4 className="text-sm font-medium text-gray-600 mb-2">Risk Levels</h4>
+                <div className="space-y-1">
+                  {(() => {
+                    const riskData = dashboardData?.permits?.reduce((acc, permit) => {
+                      acc[permit.riskLevel] = (acc[permit.riskLevel] || 0) + 1;
+                      return acc;
+                    }, {}) || {};
+                    
+                    return Object.entries(riskData).map(([level, count]) => (
+                      <div key={level} className="flex justify-between items-center text-xs">
+                        <span className={`px-2 py-1 rounded-full ${
+                          level === 'HIGH' ? 'bg-red-100 text-red-700' :
+                          level === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>{level}</span>
+                        <span className="font-medium">{count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+              
+              {/* Work Type Distribution */}
+              <div className="bg-white rounded-xl shadow-lg p-4 border-l-4 border-l-blue-500">
+                <h4 className="text-sm font-medium text-gray-600 mb-2">Work Types</h4>
+                <div className="space-y-1">
+                  {(() => {
+                    const workTypeData = dashboardData?.permits?.reduce((acc, permit) => {
+                      const types = {
+                        'COLD_WORK': 'General',
+                        'COLD_WORK_BREAKING': 'Breaking',
+                        'HOT_WORK_SPARK': 'Critical',
+                        'HOT_WORK_FLAME': 'Hot Work'
+                      };
+                      const typeName = types[permit.workType] || permit.workType;
+                      acc[typeName] = (acc[typeName] || 0) + 1;
+                      return acc;
+                    }, {}) || {};
+                    
+                    return Object.entries(workTypeData).slice(0, 3).map(([type, count]) => (
+                      <div key={type} className="flex justify-between items-center text-xs">
+                        <span className="text-gray-700">{type}</span>
+                        <span className="font-medium">{count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+              
+              {/* Zone Distribution */}
+              <div className="bg-white rounded-xl shadow-lg p-4 border-l-4 border-l-indigo-500">
+                <h4 className="text-sm font-medium text-gray-600 mb-2">Active Zones</h4>
+                <div className="space-y-1">
+                  {(() => {
+                    const zoneData = dashboardData?.permits?.reduce((acc, permit) => {
+                      if (permit.status === 'ACTIVE' || permit.status === 'FULLY_APPROVED') {
+                        acc[permit.zone] = (acc[permit.zone] || 0) + 1;
+                      }
+                      return acc;
+                    }, {}) || {};
+                    
+                    return Object.entries(zoneData).slice(0, 3).map(([zone, count]) => (
+                      <div key={zone} className="flex justify-between items-center text-xs">
+                        <span className="text-gray-700">{zone}</span>
+                        <span className="font-medium">{count}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+              
+              {/* This Week Summary */}
+              <div className="bg-white rounded-xl shadow-lg p-4 border-l-4 border-l-teal-500">
+                <h4 className="text-sm font-medium text-gray-600 mb-2">This Week</h4>
+                <div className="space-y-1">
+                  {(() => {
+                    const now = new Date();
+                    const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
+                    const thisWeekPermits = dashboardData?.permits?.filter(permit => 
+                      new Date(permit.createdAt) >= weekStart
+                    ) || [];
+                    
+                    const approvedThisWeek = thisWeekPermits.filter(p => 
+                      p.status === 'FULLY_APPROVED' || p.status === 'ACTIVE'
+                    ).length;
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-700">New Created</span>
+                          <span className="font-medium">{thisWeekPermits.length}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-700">Approved</span>
+                          <span className="font-medium text-green-600">{approvedThisWeek}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-gray-700">Success Rate</span>
+                          <span className="font-medium">
+                            {thisWeekPermits.length > 0 ? Math.round((approvedThisWeek / thisWeekPermits.length) * 100) : 0}%
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -315,14 +450,49 @@ function Dashboard({ user }) {
                         }`}
                       >
                         <div className="flex justify-between items-start mb-3">
-                          <h4 className="font-semibold text-quaternary text-lg">
-                            #{permit.permitNumber}
-                          </h4>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-quaternary text-lg truncate">
+                              #{permit.permitNumber}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {permit.workLocation}
+                            </p>
+                          </div>
                           {getStatusBadge(permit.status)}
                         </div>
-                        <p className="text-sm text-gray-700 mb-2 line-clamp-2">
+                        
+                        <p className="text-sm text-gray-700 mb-3 line-clamp-2">
                           {permit.workDescription}
                         </p>
+                        
+                        {/* Schedule Information */}
+                        <div className="bg-gray-50 p-2 rounded-lg mb-3">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="font-medium text-gray-600">Start:</span>
+                              <div className="text-green-600">
+                                {new Date(permit.startDate).toLocaleDateString('id-ID', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="font-medium text-gray-600">End:</span>
+                              <div className="text-red-600">
+                                {new Date(permit.endDate).toLocaleDateString('id-ID', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
                         <div className="flex flex-wrap gap-2 mb-2">
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/20 text-secondary">
                             <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +501,15 @@ function Dashboard({ user }) {
                             {permit.zone}
                           </span>
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-quaternary/20 text-quaternary">
-                            {permit.workType?.replace('_', ' ')}
+                            {(() => {
+                              const workTypes = {
+                                'COLD_WORK': 'General',
+                                'COLD_WORK_BREAKING': 'Breaking',
+                                'HOT_WORK_SPARK': 'Critical',
+                                'HOT_WORK_FLAME': 'Hot Work'
+                              };
+                              return workTypes[permit.workType] || permit.workType;
+                            })()}
                           </span>
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             permit.riskLevel === 'HIGH' ? 'bg-red-100 text-red-700' :
@@ -341,14 +519,46 @@ function Dashboard({ user }) {
                             {permit.riskLevel}
                           </span>
                         </div>
-                        {permit.user && (
-                          <p className="text-xs text-gray-500 flex items-center mb-2">
-                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            By: {permit.user.name}
-                          </p>
-                        )}
+                        
+                        {/* Personnel Info */}
+                        <div className="space-y-1 mb-2">
+                          {permit.user && (
+                            <p className="text-xs text-gray-500 flex items-center">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              PTWC: {permit.user.name}
+                            </p>
+                          )}
+                          {permit.performingAuthority && (
+                            <p className="text-xs text-gray-500 flex items-center">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                              </svg>
+                              PA: {permit.performingAuthority}
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* Duration Indicator */}
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                          <span>Duration:</span>
+                          <span className="font-medium">
+                            {(() => {
+                              const start = new Date(permit.startDate);
+                              const end = new Date(permit.endDate);
+                              const diffMs = end - start;
+                              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                              const diffDays = Math.floor(diffHours / 24);
+                              
+                              if (diffDays > 0) {
+                                return `${diffDays}d ${diffHours % 24}h`;
+                              } else {
+                                return `${diffHours}h`;
+                              }
+                            })()}
+                          </span>
+                        </div>
                         
                         {/* Submit Button for DRAFT permits */}
                         {permit.status === 'DRAFT' && user && (
