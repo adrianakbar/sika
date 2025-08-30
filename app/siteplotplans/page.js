@@ -13,6 +13,19 @@ function SitePlotPlans() {
 
   useEffect(() => {
     fetchData();
+    
+    // Refresh data when window becomes visible again (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchData();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const fetchData = async () => {
@@ -45,8 +58,8 @@ function SitePlotPlans() {
             // Calculate days since end date
             const daysSinceEnd = Math.floor((currentDate - endDate) / (1000 * 60 * 60 * 24));
             
-            // Hide permit if it's more than 1 day past end date
-            if (daysSinceEnd > 1) {
+            // Hide permit if it's 1 day or more past end date
+            if (daysSinceEnd >= 1) {
               return null; // Will be filtered out
             }
             
@@ -358,9 +371,31 @@ function SitePlotPlans() {
             <div className="bg-white rounded-lg shadow-md p-6 flex-1">
               {/* Filter Section */}
               <div className="mb-6">
-                <h2 className="text-xl font-semibold text-quaternary mb-4">
-                  Layout Denah Site
-                </h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-quaternary">
+                    Layout Denah Site
+                  </h2>
+                  <button
+                    onClick={fetchData}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-3 py-2 bg-quaternary text-white rounded-lg hover:bg-quaternary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg
+                      className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                    <span className="text-sm">Refresh</span>
+                  </button>
+                </div>
                 
                 {/* Filter Legend */}
                 <div className="space-y-4 mb-6">
