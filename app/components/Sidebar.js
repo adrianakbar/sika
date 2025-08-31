@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [activeMenu, setActiveMenu] = useState("");
+  const [userRole, setUserRole] = useState(null);
   const pathname = usePathname();
+
+  // Get user role from localStorage
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    setUserRole(userData.role);
+  }, []);
 
   // Function to check if menu item is active
   const isMenuActive = (item) => {
@@ -165,6 +172,17 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     },
   ];
 
+  // Filter menu items based on user role
+  const getFilteredMenuItems = () => {
+    return menuItems.filter(item => {
+      // Hide Permit Planning for AA and SC roles
+      if (item.id === "permit-planning" && (userRole === "AA" || userRole === "SC")) {
+        return false;
+      }
+      return true;
+    });
+  };
+
   return (
     <>
       {/* Overlay untuk mobile */}
@@ -225,7 +243,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         {/* Navigation Menu */}
         <nav className="p-4">
           <ul className="space-y-2">
-            {menuItems.map((item) => (
+            {getFilteredMenuItems().map((item) => (
               <li key={item.id}>
                 <Link
                   href={item.href}

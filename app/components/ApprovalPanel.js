@@ -17,8 +17,13 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
       return true;
     }
 
-    // CC dapat approve permit dengan status AA_APPROVED
-    if (user.role === 'CC' && permit.status === 'AA_APPROVED') {
+    // SC dapat approve permit dengan status PENDING_SC_APPROVAL
+    if (user.role === 'SC' && permit.status === 'PENDING_SC_APPROVAL') {
+      return true;
+    }
+
+    // CC dapat approve permit dengan status PENDING_SC_APPROVAL (backward compatibility)
+    if (user.role === 'CC' && (permit.status === 'PENDING_SC_APPROVAL' || permit.status === 'AA_APPROVED')) {
       return true;
     }
 
@@ -28,12 +33,18 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
   const canReject = () => {
     if (!user || !permit) return false;
 
-    // AA dan CC dapat reject permit yang sedang dalam review mereka
+    // AA dapat reject permit yang sedang dalam review mereka
     if (user.role === 'AA' && permit.status === 'PENDING_AA_APPROVAL') {
       return true;
     }
 
-    if (user.role === 'CC' && permit.status === 'AA_APPROVED') {
+    // SC dapat reject permit yang sedang dalam review mereka
+    if (user.role === 'SC' && permit.status === 'PENDING_SC_APPROVAL') {
+      return true;
+    }
+
+    // CC dapat reject permit yang sedang dalam review mereka
+    if (user.role === 'CC' && (permit.status === 'PENDING_SC_APPROVAL' || permit.status === 'AA_APPROVED')) {
       return true;
     }
 
@@ -151,6 +162,7 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
     const statusConfig = {
       'DRAFT': { color: 'bg-gray-500', text: 'Draft' },
       'PENDING_AA_APPROVAL': { color: 'bg-yellow-500', text: 'Pending AA Approval' },
+      'PENDING_SC_APPROVAL': { color: 'bg-blue-500', text: 'Pending SC Approval' },
       'AA_APPROVED': { color: 'bg-blue-500', text: 'AA Approved' },
       'FULLY_APPROVED': { color: 'bg-green-500', text: 'Fully Approved' },
       'ACTIVE': { color: 'bg-green-600', text: 'Active' },
@@ -172,6 +184,7 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
     const roles = {
       'PTWC': 'Permit to Work Controller',
       'AA': 'Area Authority',
+      'SC': 'Site Controller',
       'CC': 'Company Controller',
       'ADMIN': 'Administrator'
     };

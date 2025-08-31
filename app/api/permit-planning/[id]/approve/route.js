@@ -27,7 +27,7 @@ export async function POST(request, { params }) {
       }, { status: 404 });
     }
 
-    if (!['AA', 'SC'].includes(role) || user.role !== role) {
+    if (!['AA', 'SC', 'CC'].includes(role) || user.role !== role) {
       return Response.json({
         success: false,
         message: 'Invalid role or user does not have permission to approve'
@@ -68,13 +68,13 @@ export async function POST(request, { params }) {
         aaApprovedBy: parseInt(userId),
         aaApprovedAt: new Date(),
         aaComments: comments || null,
-        status: 'AA_APPROVED'
+        status: 'PENDING_SC_APPROVAL'
       };
-      newStatus = 'AA_APPROVED';
+      newStatus = 'PENDING_SC_APPROVAL';
 
     } else if (role === 'SC') {
       // SC approval - hanya bisa approve jika sudah disetujui AA
-      if (permit.status !== 'AA_APPROVED') {
+      if (permit.status !== 'PENDING_SC_APPROVAL') {
         return Response.json({
           success: false,
           message: 'Permit must be approved by AA first before SC can approve'
@@ -83,6 +83,23 @@ export async function POST(request, { params }) {
 
       updateData = {
         scApprovedBy: parseInt(userId),
+        scApprovedAt: new Date(),
+        scComments: comments || null,
+        status: 'FULLY_APPROVED'
+      };
+      newStatus = 'FULLY_APPROVED';
+    
+    } else if (role === 'CC') {
+      // CC approval - backward compatibility, dapat approve setelah AA atau SC
+      if (!['PENDING_SC_APPROVAL', 'AA_APPROVED'].includes(permit.status)) {
+        return Response.json({
+          success: false,
+          message: 'Permit is not in a state that can be approved by CC'
+        }, { status: 400 });
+      }
+
+      updateData = {
+        scApprovedBy: parseInt(userId), // CC acts as SC for backward compatibility
         scApprovedAt: new Date(),
         scComments: comments || null,
         status: 'FULLY_APPROVED'
@@ -173,7 +190,7 @@ export async function PUT(request, { params }) {
       }, { status: 404 });
     }
 
-    if (!['AA', 'SC'].includes(role) || user.role !== role) {
+    if (!['AA', 'SC', 'CC'].includes(role) || user.role !== role) {
       return Response.json({
         success: false,
         message: 'Invalid role or user does not have permission to reject'
@@ -193,7 +210,14 @@ export async function PUT(request, { params }) {
     }
 
     // Tentukan status rejection berdasarkan role
-    let newStatus = role === 'AA' ? 'REJECTED_BY_AA' : 'REJECTED_BY_SC';
+    let newStatus;
+    if (role === 'AA') {
+      newStatus = 'REJECTED_BY_AA';
+    } else if (role === 'SC') {
+      newStatus = 'REJECTED_BY_SC';
+    } else if (role === 'CC') {
+      newStatus = 'REJECTED_BY_SC'; // CC rejection acts as SC rejection for backward compatibility
+    }
 
     // Update permit dengan rejection
     const updatedPermit = await prisma.permitPlanning.update({

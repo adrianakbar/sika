@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 export class UserModel {
   // Mendapatkan semua users
@@ -141,7 +142,13 @@ export class AuthModel {
       where: { email }
     });
 
-    if (!user || user.password !== password) {
+    if (!user) {
+      return null;
+    }
+
+    // Use bcrypt to compare password with hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return null;
     }
 

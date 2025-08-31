@@ -82,7 +82,7 @@ async function getPTWCDashboard(userId) {
     total: permits.length,
     draft: permits.filter(p => p.status === 'DRAFT').length,
     pendingAA: permits.filter(p => p.status === 'PENDING_AA_APPROVAL').length,
-    aaApproved: permits.filter(p => p.status === 'AA_APPROVED').length,
+    pendingSC: permits.filter(p => p.status === 'PENDING_SC_APPROVAL').length,
     fullyApproved: permits.filter(p => p.status === 'FULLY_APPROVED').length,
     active: permits.filter(p => p.status === 'ACTIVE').length,
     rejected: permits.filter(p => p.status.includes('REJECTED')).length
@@ -127,7 +127,7 @@ async function getAADashboard() {
 async function getSCDashboard() {
   const permits = await prisma.permitPlanning.findMany({
     where: {
-      status: 'AA_APPROVED'
+      status: 'PENDING_SC_APPROVAL'
     },
     include: {
       user: {
@@ -177,7 +177,7 @@ async function getAdminDashboard() {
     total: permits.length,
     draft: permits.filter(p => p.status === 'DRAFT').length,
     pendingAA: permits.filter(p => p.status === 'PENDING_AA_APPROVAL').length,
-    aaApproved: permits.filter(p => p.status === 'AA_APPROVED').length,
+    pendingSC: permits.filter(p => p.status === 'PENDING_SC_APPROVAL').length,
     fullyApproved: permits.filter(p => p.status === 'FULLY_APPROVED').length,
     active: permits.filter(p => p.status === 'ACTIVE').length,
     rejected: permits.filter(p => p.status.includes('REJECTED')).length

@@ -86,6 +86,7 @@ function Dashboard({ user }) {
     const roles = {
       'PTWC': 'Permit to Work Controller',
       'AA': 'Area Authority',
+      'SC': 'Site Controller',
       'CC': 'Company Controller',
       'ADMIN': 'Administrator'
     };
@@ -96,6 +97,7 @@ function Dashboard({ user }) {
     const statusConfig = {
       'DRAFT': { color: 'bg-gray-500', text: 'Draft' },
       'PENDING_AA_APPROVAL': { color: 'bg-yellow-500', text: 'Pending AA' },
+      'PENDING_SC_APPROVAL': { color: 'bg-blue-500', text: 'Pending SC' },
       'AA_APPROVED': { color: 'bg-quaternary', text: 'AA Approved' },
       'FULLY_APPROVED': { color: 'bg-secondary', text: 'Fully Approved' },
       'ACTIVE': { color: 'bg-secondary', text: 'Active' },
@@ -221,7 +223,7 @@ function Dashboard({ user }) {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Pending</p>
                     <p className="text-3xl font-bold text-yellow-600">
-                      {(dashboardData?.stats?.pendingAA || 0) + (dashboardData?.stats?.pendingApproval || 0) + (dashboardData?.stats?.draft || 0)}
+                      {(dashboardData?.stats?.pendingAA || 0) + (dashboardData?.stats?.pendingSC || 0) + (dashboardData?.stats?.pendingApproval || 0) + (dashboardData?.stats?.draft || 0)}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {dashboardData?.stats?.draft ? `${dashboardData.stats.draft} draft` : 'Needs approval'}
@@ -428,6 +430,7 @@ function Dashboard({ user }) {
                     {dashboardData?.role === 'PTWC' ? 'My Permits' :
                      dashboardData?.role === 'AA' ? 'Permits Awaiting AA Approval' :
                      dashboardData?.role === 'SC' ? 'Permits Awaiting SC Approval' :
+                     dashboardData?.role === 'CC' ? 'Permits Awaiting CC Approval' :
                      'All Permits'}
                   </h3>
                   <div className="bg-tertiary px-3 py-1 rounded-full">
