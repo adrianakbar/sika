@@ -441,21 +441,11 @@ function SitePlotPlans() {
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-500">ORF PHE WMO</div>
-              <div className="text-sm text-gray-500 mt-1">1-10 Juli 2025</div>
-              <div className="text-sm text-gray-500">History Permit</div>
               <div className="mt-2">
                 <span className="text-xs text-gray-500">Total Permit</span>
                 <div className="text-4xl font-bold text-quaternary">
                   {loading ? "..." : plotPoints.length}
                 </div>
-              </div>
-              <div className="mt-2">
-                <a
-                  href="/permitplanning"
-                  className="text-primary hover:text-red-600 text-sm font-medium"
-                >
-                  → Work Permit Planning
-                </a>
               </div>
             </div>
           </div>

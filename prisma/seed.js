@@ -29,7 +29,7 @@ async function main() {
   const ptwcPassword = await bcrypt.hash('ptwc123', 10)
   const ptwc1 = await prisma.user.create({
     data: {
-      name: 'Bambang Sutrisno',
+      name: 'User PTWC',
       email: 'ptwc@sika.com',
       password: ptwcPassword,
       role: 'PTWC',
@@ -38,7 +38,7 @@ async function main() {
 
   const ptwc2 = await prisma.user.create({
     data: {
-      name: 'Sari Indrawati',
+      name: 'User PTWC 2',
       email: 'ptwc2@sika.com',
       password: ptwcPassword,
       role: 'PTWC',
@@ -48,7 +48,7 @@ async function main() {
   const aaPassword = await bcrypt.hash('aa123', 10)
   const aa1 = await prisma.user.create({
     data: {
-      name: 'Ahmad Hidayat',
+      name: 'User AA',
       email: 'aa@sika.com',
       password: aaPassword,
       role: 'AA',
@@ -57,7 +57,7 @@ async function main() {
 
   const aa2 = await prisma.user.create({
     data: {
-      name: 'Rina Marlina',
+      name: 'User AA 2',
       email: 'aa.processing@sika.com',
       password: aaPassword,
       role: 'AA',
@@ -67,7 +67,7 @@ async function main() {
   const scPassword = await bcrypt.hash('sc123', 10)
   const sc1 = await prisma.user.create({
     data: {
-      name: 'Joko Priyanto',
+      name: 'User SC',
       email: 'sc@sika.com',
       password: scPassword,
       role: 'SC',
@@ -76,7 +76,7 @@ async function main() {
 
   const sc2 = await prisma.user.create({
     data: {
-      name: 'Dewi Sartika',
+      name: 'User SC 2',
       email: 'sc.utilities@sika.com',
       password: scPassword,
       role: 'SC',
