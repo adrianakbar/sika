@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 // DELETE - Delete permit (hanya PTWC owner atau ADMIN)
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
 

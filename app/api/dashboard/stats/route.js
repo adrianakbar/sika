@@ -18,11 +18,11 @@ export async function GET(request) {
       recentActivities,
       totalUsers
     ] = await Promise.all([
-      // Active permits (APPROVED and ACTIVE status)
+      // Active permits (FULLY_APPROVED and ACTIVE status)
       prisma.permitPlanning.count({
         where: {
           ...where,
-          status: { in: ['APPROVED', 'ACTIVE'] }
+          status: { in: ['FULLY_APPROVED', 'ACTIVE'] }
         }
       }),
       
@@ -38,7 +38,7 @@ export async function GET(request) {
       prisma.permitPlanning.count({
         where: {
           ...where,
-          status: { in: ['SUBMITTED', 'UNDER_REVIEW'] }
+          status: { in: ['SUBMITTED', 'PENDING_AA_APPROVAL', 'PENDING_SC_APPROVAL', 'AA_APPROVED'] }
         }
       }),
       
@@ -75,11 +75,14 @@ export async function GET(request) {
       const timeAgo = getTimeAgo(permit.updatedAt);
       
       switch (permit.status) {
-        case 'APPROVED':
+        case 'FULLY_APPROVED':
+        case 'ACTIVE':
           action = `Permit ${permit.workType || 'Work'} disetujui`;
           type = 'success';
           break;
-        case 'UNDER_REVIEW':
+        case 'PENDING_AA_APPROVAL':
+        case 'PENDING_SC_APPROVAL':
+        case 'AA_APPROVED':
           action = `Permit ${permit.workType || 'Work'} dalam review`;
           type = 'warning';
           break;
@@ -91,7 +94,8 @@ export async function GET(request) {
           action = `Permit ${permit.workType || 'Work'} diajukan`;
           type = 'default';
           break;
-        case 'REJECTED':
+        case 'REJECTED_BY_AA':
+        case 'REJECTED_BY_SC':
           action = `Permit ${permit.workType || 'Work'} ditolak`;
           type = 'error';
           break;

@@ -2,7 +2,7 @@ import { GoalModel } from '@/models/User';
 
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const goal = await GoalModel.getGoalById(id);
     
     if (!goal) {
@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { title, description, status } = body;
 
@@ -62,7 +62,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     const deleted = await GoalModel.deleteGoal(id);
     

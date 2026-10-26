@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 // POST - Approve permit by AA or CC
 export async function POST(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { userId, role, comments } = body;
 
@@ -74,7 +74,7 @@ export async function POST(request, { params }) {
 
     } else if (role === 'SC') {
       // SC approval - hanya bisa approve jika sudah disetujui AA
-      if (permit.status !== 'PENDING_SC_APPROVAL') {
+      if (!['PENDING_SC_APPROVAL', 'AA_APPROVED'].includes(permit.status)) {
         return Response.json({
           success: false,
           message: 'Permit must be approved by AA first before SC can approve'
@@ -166,7 +166,7 @@ export async function POST(request, { params }) {
 // PUT - Reject permit by AA or CC
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { userId, role, rejectionReason } = body;
 

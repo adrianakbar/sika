@@ -17,8 +17,8 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
       return true;
     }
 
-    // SC dapat approve permit dengan status PENDING_SC_APPROVAL
-    if (user.role === 'SC' && permit.status === 'PENDING_SC_APPROVAL') {
+    // SC dapat approve permit dengan status PENDING_SC_APPROVAL atau AA_APPROVED
+    if (user.role === 'SC' && (permit.status === 'PENDING_SC_APPROVAL' || permit.status === 'AA_APPROVED')) {
       return true;
     }
 
@@ -39,7 +39,7 @@ export default function ApprovalPanel({ permit, user, onApprove, onReject, onRef
     }
 
     // SC dapat reject permit yang sedang dalam review mereka
-    if (user.role === 'SC' && permit.status === 'PENDING_SC_APPROVAL') {
+    if (user.role === 'SC' && (permit.status === 'PENDING_SC_APPROVAL' || permit.status === 'AA_APPROVED')) {
       return true;
     }
 

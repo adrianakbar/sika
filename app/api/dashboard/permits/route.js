@@ -127,7 +127,7 @@ async function getAADashboard() {
 async function getSCDashboard() {
   const permits = await prisma.permitPlanning.findMany({
     where: {
-      status: 'PENDING_SC_APPROVAL'
+      status: { in: ['PENDING_SC_APPROVAL', 'AA_APPROVED'] }
     },
     include: {
       user: {

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 // POST - Submit permit untuk approval (hanya PTWC)
 export async function POST(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { userId } = body;
 
