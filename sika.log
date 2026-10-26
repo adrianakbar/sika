@@ -1,0 +1,45 @@
+   ▲ Next.js 15.4.6
+   - Local:        http://localhost:3005
+   - Network:      http://192.168.1.7:3005
+
+ ✓ Starting...
+ ✓ Ready in 3.3s
+Error fetching dashboard stats: Error [PrismaClientValidationError]: 
+Invalid `prisma.permitPlanning.count()` invocation:
+
+{
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  },
+  where: {
+    status: {
+      in: [
+        "APPROVED",
+        "ACTIVE"
+      ]
+      ~~~~~~~~~~~~
+    }
+  }
+}
+
+Invalid value for argument `in`. Expected PermitStatus.
+    at async v (.next/server/app/api/dashboard/stats/route.js:1:1910)
+    at async k (.next/server/app/api/dashboard/stats/route.js:1:6169) {
+  clientVersion: '6.14.0'
+}
+   ▲ Next.js 15.4.6
+   - Local:        http://localhost:3005
+   - Network:      http://192.168.1.7:3005
+
+ ✓ Starting...
+ ✓ Ready in 3.1s
+   ▲ Next.js 15.4.6
+   - Local:        http://localhost:3005
+   - Network:      http://192.168.1.7:3005
+
+ ✓ Starting...
+ ✓ Ready in 2.6s
